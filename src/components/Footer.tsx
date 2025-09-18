@@ -75,21 +75,25 @@ const Footer = () => {
           {/* Social Links */}
           <div className="flex space-x-4 mt-4 sm:mt-0">
             <a 
-              href="#" 
+              href="https://github.com" 
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-muted-foreground hover:text-primary transition-colors p-2 hover:bg-card/50 rounded-lg"
               aria-label="GitHub"
             >
               <Github className="w-5 h-5" />
             </a>
             <a 
-              href="#" 
+              href="https://twitter.com" 
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-muted-foreground hover:text-primary transition-colors p-2 hover:bg-card/50 rounded-lg"
               aria-label="Twitter"
             >
               <Twitter className="w-5 h-5" />
             </a>
             <a 
-              href="#" 
+              href="mailto:contact@meteormadness.com" 
               className="text-muted-foreground hover:text-primary transition-colors p-2 hover:bg-card/50 rounded-lg"
               aria-label="Contact"
             >

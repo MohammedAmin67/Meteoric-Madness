@@ -36,7 +36,12 @@ interface SimulationResults {
   };
 }
 
-const SimulationPanel = () => {
+interface SimulationPanelProps {
+  onSimulationComplete?: (data: SimulationResults) => void;
+  onParamsChange?: (params: any) => void;
+}
+
+const SimulationPanel = ({ onSimulationComplete, onParamsChange }: SimulationPanelProps) => {
   const [asteroidParams, setAsteroidParams] = useState({
     size: "100",
     velocity: "20",
@@ -51,16 +56,20 @@ const SimulationPanel = () => {
   const handleSimulate = async () => {
     setIsLoading(true);
     try {
-      // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 2000));
       const simulationData = await simulateAsteroid(asteroidParams);
       setResults(simulationData);
+      onSimulationComplete?.(simulationData);
     } catch (error) {
       console.error("Simulation failed:", error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    onParamsChange?.(asteroidParams);
+  }, [asteroidParams, onParamsChange]);
 
   const handleReset = () => {
     setResults(null);
