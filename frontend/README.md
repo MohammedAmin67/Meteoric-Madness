@@ -1,73 +1,73 @@
-# Welcome to your Lovable project
+# 🌌 Meteor Madness - Asteroid Impact Visualizer
 
-## Project info
+> **Simulate cosmic collisions and defend Earth!**  
+> Model asteroid impacts, explore planetary defense strategies, and experience the thrill of saving our planet from celestial threats.
 
-**URL**: https://lovable.dev/projects/6eaa97cb-0df1-42bb-987d-d6b1439368d1
+[![GitHub Stars](https://img.shields.io/github/stars/MohammedAmin67/asteroid-impact-visualizer?style=for-the-badge)](https://github.com/MohammedAmin67/asteroid-impact-visualizer/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/MohammedAmin67/asteroid-impact-visualizer?style=for-the-badge)](https://github.com/MohammedAmin67/asteroid-impact-visualizer/network)
+[![GitHub Issues](https://img.shields.io/github/issues/MohammedAmin67/asteroid-impact-visualizer?style=for-the-badge)](https://github.com/MohammedAmin67/asteroid-impact-visualizer/issues)
+[![License](https://img.shields.io/github/license/MohammedAmin67/asteroid-impact-visualizer?style=for-the-badge)](LICENSE)
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 🚀 Project Overview
 
-**Use Lovable**
+**Meteor Madness** is an interactive web application that lets you **simulate asteroid impacts on Earth** with scientific precision. Built using modern web technologies, it combines **realistic orbital mechanics**, **impact analysis**, and **educational content** to make planetary defense both fun and informative.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/6eaa97cb-0df1-42bb-987d-d6b1439368d1) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🌟 Key Features
 
-**Use your preferred IDE**
+- 🌍 **Real-Time Orbital Simulation**  
+  Track asteroids approaching Earth with accurate physics.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- 📊 **Impact Data Visualization**  
+  Interactive charts display predicted damage and impact effects.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- 🎮 **Interactive Game Mode**  
+  Strategically defend Earth from cosmic threats.
 
-Follow these steps:
+- 📚 **Educational Insights**  
+  Learn about space science, asteroid threats, and planetary defense.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- 🎨 **Modern UI & Animations**  
+  Responsive design with stunning D3.js and Three.js visuals.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- 🔬 **Scientific Accuracy**  
+  Calculations based on real astronomical data and physics principles.
 
-# Step 3: Install the necessary dependencies.
-npm i
+- 🛡️ **Defense Strategies**  
+  Explore techniques like nuclear deflection, kinetic impactors, and gravity tractors.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+---
+
+## 🛠️ Tech Stack
+
+| Technology      | Purpose                       | Version |
+|-----------------|-------------------------------|---------|
+| React 18        | Frontend Framework            | Latest  |
+| Vite            | Build Tool & Dev Server       | 5.x     |
+| Tailwind CSS    | Styling & Design System       | 3.x     |
+| D3.js           | Data Visualization            | 7.x     |
+| Three.js        | 3D Graphics & Animations      | Latest  |
+| Radix UI        | Accessible UI Components      | Latest  |
+| shadcn/ui       | Component Library             | Latest  |
+| Lucide React    | Icon Library                  | Latest  |
+
+---
+
+## 🚦 Getting Started
+
+### Prerequisites
+
+- **Node.js** (v18 or higher)  
+- **npm** 
+
+### Installation & Running
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/6eaa97cb-0df1-42bb-987d-d6b1439368d1) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
