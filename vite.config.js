@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig(({ mode }) => ({
-  base: mode === 'production' ? '/Meteor-Madness/' : '/',
+  base: mode === 'production' ? '/Meteoric-Madness/' : '/',
   
   server: {
     host: "::",

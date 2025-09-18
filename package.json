@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://MohammedAmin67.github.io/Meteor-Madness",
+  "homepage": "https://MohammedAmin67.github.io/Meteoric-Madness",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
