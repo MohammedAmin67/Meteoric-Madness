@@ -625,9 +625,6 @@ const ImpactDataChart = ({
                         <span className="text-warning text-sm">💰</span>
                         <span className="text-sm font-medium text-warning">Economic Loss</span>
                       </div>
-                      <div className="text-xl font-bold text-warning break-words">
-                        {formatNumber(data.damage.economicLoss, 'currency')}
-                      </div>
                       <div className="text-xs text-muted-foreground mt-1">Total damages</div>
                     </div>
 
