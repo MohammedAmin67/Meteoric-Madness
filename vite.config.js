@@ -30,8 +30,7 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          three: ['three'],
-          ui: ['@radix-ui/react-tabs', '@radix-ui/react-card']
+          three: ['three']
         }
       }
     }
