@@ -91,12 +91,12 @@ export const simulateAsteroid = async (params) => {
   }
   
   // Calculate damage estimates (angle affects impact severity)
-  const baseCasualties = Math.pow(size, 1.5) * Math.pow(velocity, 0.5) * 100 * angleImpactFactor;
+  const baseCasualties = Math.pow(size, 1.5) * Math.pow(velocity, 0.5) * 20 * angleImpactFactor;
   const casualties = Math.floor(baseCasualties * (isOceanImpact ? 0.1 : 1));
-  
-  const economicLoss = kineticEnergy / 1e12 * 50e9; // rough $50B per petajoule
-  const affectedArea = Math.PI * Math.pow(craterSize * 5, 2); // damage radius ~5x crater radius
-  
+
+  const economicLoss = kineticEnergy / 1e12 * 1e9; // rough $5B per petajoule
+  const affectedArea = Math.PI * Math.pow(craterSize * 3, 2); // damage radius ~3x crater radius
+
   return {
     kineticEnergy,
     craterSize,

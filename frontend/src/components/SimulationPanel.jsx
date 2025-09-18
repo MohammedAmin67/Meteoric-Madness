@@ -111,6 +111,29 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
     return { level: "Global Catastrophe", color: "text-destructive", description: "Mass extinction event" };
   };
 
+  // Enhanced number formatting functions
+  const formatLargeNumber = (number) => {
+    if (number >= 1e12) return `${(number / 1e12).toFixed(1)}T`;
+    if (number >= 1e9) return `${(number / 1e9).toFixed(1)}B`;
+    if (number >= 1e6) return `${(number / 1e6).toFixed(1)}M`;
+    if (number >= 1e3) return `${(number / 1e3).toFixed(1)}K`;
+    return number.toLocaleString();
+  };
+
+  const formatCurrency = (number) => {
+    if (number >= 1e12) return `$${(number / 1e12).toFixed(1)}T`;
+    if (number >= 1e9) return `$${(number / 1e9).toFixed(1)}B`;
+    if (number >= 1e6) return `$${(number / 1e6).toFixed(1)}M`;
+    if (number >= 1e3) return `$${(number / 1e3).toFixed(1)}K`;
+    return `$${number.toLocaleString()}`;
+  };
+
+  const formatArea = (number) => {
+    if (number >= 1e6) return `${(number / 1e6).toFixed(1)}M km²`;
+    if (number >= 1e3) return `${(number / 1e3).toFixed(1)}K km²`;
+    return `${number.toLocaleString()} km²`;
+  };
+
   return (
     <div className="w-full">
       {/* Parameters Panel */}
@@ -355,7 +378,7 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
         </CardContent>
       </Card>
 
-      {/* Results Section - Responsive */}
+      {/* Results Section - Enhanced Responsive */}
       {results && (
         <div className="mt-6 space-y-6">
           {/* Impact Summary */}
@@ -369,18 +392,18 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Key Metrics Grid - Responsive */}
+              {/* Key Metrics Grid - Enhanced Responsive */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                <div className="text-center p-4 bg-gradient-to-br from-primary/10 to-cosmic-blue/10 rounded-lg border border-primary/20">
-                  <div className="text-2xl sm:text-3xl font-bold text-primary mb-1">
+                <div className="text-center p-4 sm:p-6 bg-gradient-to-br from-primary/10 to-cosmic-blue/10 rounded-lg border border-primary/20">
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary mb-1 break-words">
                     {(results.kineticEnergy / 1e15).toFixed(1)}
                   </div>
                   <div className="text-sm text-muted-foreground">Petajoules</div>
                   <div className="text-xs text-primary mt-1">Kinetic Energy</div>
                 </div>
                 
-                <div className="text-center p-4 bg-gradient-to-br from-cosmic-orange/10 to-warning/10 rounded-lg border border-cosmic-orange/20">
-                  <div className="text-2xl sm:text-3xl font-bold text-cosmic-orange mb-1">
+                <div className="text-center p-4 sm:p-6 bg-gradient-to-br from-cosmic-orange/10 to-warning/10 rounded-lg border border-cosmic-orange/20">
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-cosmic-orange mb-1 break-words">
                     {results.craterSize.toFixed(0)}
                   </div>
                   <div className="text-sm text-muted-foreground">Kilometers</div>
@@ -432,7 +455,7 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
             </CardContent>
           </Card>
 
-          {/* Damage Assessment - Responsive Grid */}
+          {/* Damage Assessment - Fixed Container Overflow */}
           <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-cosmic">
             <CardHeader>
               <CardTitle className="flex items-center space-x-3">
@@ -444,25 +467,74 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-destructive/10 rounded-lg border border-destructive/20">
-                  <div className="text-xl sm:text-2xl font-bold text-destructive mb-1">
-                    {results.damage.casualties.toLocaleString()}
+                {/* Casualties - Flexible Container */}
+                <div className="flex flex-col items-center justify-center p-4 sm:p-6 bg-destructive/10 rounded-lg border border-destructive/20 min-h-[120px]">
+                  <div className="text-center space-y-2">
+                    <div className="text-lg sm:text-xl lg:text-2xl font-bold text-destructive break-words hyphens-auto">
+                      {formatLargeNumber(results.damage.casualties)}
+                    </div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Estimated Casualties</div>
+                    {/* Raw number tooltip */}
+                    <div className="text-xs text-muted-foreground/60">
+                      ({results.damage.casualties.toLocaleString()})
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">Estimated Casualties</div>
                 </div>
                 
-                <div className="text-center p-4 bg-warning/10 rounded-lg border border-warning/20">
-                  <div className="text-xl sm:text-2xl font-bold text-warning mb-1">
-                    ${(results.damage.economicLoss / 1e9).toFixed(1)}B
+                {/* Economic Loss - Flexible Container */}
+                <div className="flex flex-col items-center justify-center p-4 sm:p-6 bg-warning/10 rounded-lg border border-warning/20 min-h-[120px]">
+                  <div className="text-center space-y-2">
+                    <div className="text-lg sm:text-xl lg:text-2xl font-bold text-warning break-words hyphens-auto">
+                      {formatCurrency(results.damage.economicLoss)}
+                    </div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Economic Loss</div>
+                    {/* Raw number tooltip */}
+                    <div className="text-xs text-muted-foreground/60">
+                      (${results.damage.economicLoss.toLocaleString()})
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">Economic Loss</div>
                 </div>
                 
-                <div className="text-center p-4 bg-cosmic-orange/10 rounded-lg border border-cosmic-orange/20 sm:col-span-2 lg:col-span-1">
-                  <div className="text-xl sm:text-2xl font-bold text-cosmic-orange mb-1">
-                    {results.damage.affectedArea.toLocaleString()}
+                {/* Affected Area - Flexible Container */}
+                <div className="flex flex-col items-center justify-center p-4 sm:p-6 bg-cosmic-orange/10 rounded-lg border border-cosmic-orange/20 sm:col-span-2 lg:col-span-1 min-h-[120px]">
+                  <div className="text-center space-y-2">
+                    <div className="text-lg sm:text-xl lg:text-2xl font-bold text-cosmic-orange break-words hyphens-auto">
+                      {formatArea(results.damage.affectedArea)}
+                    </div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Affected Area</div>
+                    {/* Raw number tooltip */}
+                    <div className="text-xs text-muted-foreground/60">
+                      ({results.damage.affectedArea.toLocaleString()} km²)
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">Affected Area (km²)</div>
+                </div>
+              </div>
+              
+              {/* Additional Context Information */}
+              <div className="mt-6 p-4 bg-muted/10 rounded-lg border border-border/30">
+                <h4 className="text-sm font-semibold mb-3 flex items-center">
+                  <Info className="w-4 h-4 mr-2 text-cosmic-blue" />
+                  Impact Context
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                  <div>
+                    <span className="text-muted-foreground">Population Density:</span>
+                    <div className="font-medium">
+                      {results.impactLocation.populationDensity || 'Variable'} people/km²
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Infrastructure:</span>
+                    <div className="font-medium">
+                      {results.impactLocation.infrastructure || 'Mixed development'}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Warning Time:</span>
+                    <div className="font-medium">
+                      {results.impactLocation.warningTime || 'Hours to days'}
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>

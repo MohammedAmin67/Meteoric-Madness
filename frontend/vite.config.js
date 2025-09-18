@@ -8,6 +8,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig(({ mode }) => ({
+  base: mode === 'production' ? '/Meteor-Madness/' : '/',
+  
   server: {
     host: "::",
     port: 8080,
@@ -18,4 +20,20 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  
+  // Optimize build for GitHub Pages
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          three: ['three'],
+          ui: ['@radix-ui/react-tabs', '@radix-ui/react-card']
+        }
+      }
+    }
+  }
 }));

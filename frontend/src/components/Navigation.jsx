@@ -100,8 +100,8 @@ const Navigation = () => {
             className="flex items-center space-x-3 cursor-pointer group"
             onClick={scrollToTop}
           >
-            <div className={`w-10 h-10 bg-gradient-cosmic rounded-xl flex items-center justify-center transition-all duration-300`}>
-              <Zap className="w-6 h-6 text-primary-foreground group-hover:shadow-glow" />
+            <div className={`w-10 h-10 bg-gradient-cosmic rounded-xl flex items-center justify-center transition-all duration-300 group-hover:shadow-glow`}>
+              <Zap className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
               <span className="text-xl font-bold bg-gradient-to-r from-primary to-cosmic-blue bg-clip-text text-transparent">
@@ -130,14 +130,14 @@ const Navigation = () => {
                         : 'text-foreground hover:text-primary hover:bg-card/50'
                     }`}
                   >
-                    <Icon className={`w-4 h-4 transition-all duration-300 ${
+                    <Icon className={`w-4 h-4 transition-all duration-900 ${
                       isActive ? 'animate-glow-pulse' : 'group-hover:animate-glow-pulse'
                     }`} />
                     <span>{item.name}</span>
                     
                     {/* Active indicator */}
                     {isActive && (
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full animate-pulse" />
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
                     )}
                   </button>
                 );
@@ -245,7 +245,7 @@ const Navigation = () => {
                   {/* Active indicator */}
                   {isActive && (
                     <div className="ml-auto">
-                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                      <div className="w-2 h-2 bg-primary rounded-full" />
                     </div>
                   )}
                 </button>
