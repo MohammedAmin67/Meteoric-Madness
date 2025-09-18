@@ -3,11 +3,6 @@
 > **Simulate cosmic collisions and defend Earth!**  
 > Model asteroid impacts, explore planetary defense strategies, and experience the thrill of saving our planet from celestial threats.
 
-[![GitHub Stars](https://img.shields.io/github/stars/MohammedAmin67/asteroid-impact-visualizer?style=for-the-badge)](https://github.com/MohammedAmin67/asteroid-impact-visualizer/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/MohammedAmin67/asteroid-impact-visualizer?style=for-the-badge)](https://github.com/MohammedAmin67/asteroid-impact-visualizer/network)
-[![GitHub Issues](https://img.shields.io/github/issues/MohammedAmin67/asteroid-impact-visualizer?style=for-the-badge)](https://github.com/MohammedAmin67/asteroid-impact-visualizer/issues)
-[![License](https://img.shields.io/github/license/MohammedAmin67/asteroid-impact-visualizer?style=for-the-badge)](LICENSE)
-
 ---
 
 ## 🚀 Project Overview
