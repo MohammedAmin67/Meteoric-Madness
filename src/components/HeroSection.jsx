@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowDown, Zap, Shield, Globe } from "lucide-react";
+import { Zap, Shield, Globe } from "lucide-react";
 import heroImage from "@/assets/hero-space.jpg";
 
 const HeroSection = () => {
@@ -81,11 +81,6 @@ const HeroSection = () => {
           >
             Learn More
           </Button>
-        </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-15 left-1/2 transform -translate-x-1/2 pt-20 animate-bounce">
-          <ArrowDown className="w-6 h-6 text-muted-foreground cursor-pointer" onClick={() => document.getElementById('simulation')?.scrollIntoView({ behavior: 'smooth' })} />
         </div>
       </div>
     </section>
