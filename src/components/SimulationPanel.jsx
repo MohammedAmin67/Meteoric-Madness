@@ -12,13 +12,12 @@ import {
   Play, 
   RotateCcw, 
   AlertTriangle, 
-  Zap, 
-  Globe2, 
-  Activity,
-  Waves,
+  Shield,
   Target,
+  Activity,
   TrendingUp,
-  Info
+  Info,
+  Zap
 } from "lucide-react";
 import { simulateAsteroid } from "@/services/mockApi";
 
@@ -39,7 +38,6 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
     setIsLoading(true);
     setProgress(0);
     
-    // Simulate loading progress
     const progressInterval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 90) {
@@ -87,31 +85,30 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
     });
   };
 
-  const getRiskLevel = (magnitude) => {
-    if (magnitude < 6) return { level: "Low", color: "bg-success", textColor: "text-success" };
-    if (magnitude < 7) return { level: "Moderate", color: "bg-cosmic-orange", textColor: "text-cosmic-orange" };
-    return { level: "Catastrophic", color: "bg-destructive", textColor: "text-destructive" };
+  const getThreatLevel = (magnitude) => {
+    if (magnitude < 6) return { level: "Low", color: "bg-mission-green", textColor: "text-mission-green" };
+    if (magnitude < 7) return { level: "Moderate", color: "bg-plasma-orange", textColor: "text-plasma-orange" };
+    return { level: "Critical", color: "bg-destructive", textColor: "text-destructive" };
   };
 
   const getCompositionInfo = (composition) => {
     const info = {
-      rock: { emoji: "🪨", description: "Stony asteroid", density: "2.0-3.5 g/cm³", color: "text-purple-400" },
-      metal: { emoji: "⚙️", description: "Metallic asteroid", density: "7.0-8.0 g/cm³", color: "text-gray-400" },
-      ice: { emoji: "🧊", description: "Icy comet", density: "0.5-1.0 g/cm³", color: "text-cyan-400" },
-      mixed: { emoji: "🌑", description: "Mixed composition", density: "2.0-5.0 g/cm³", color: "text-orange-400" }
+      rock: { emoji: "🪨", description: "Stony asteroid", density: "2.0-3.5 g/cm³", color: "text-stellar-cyan" },
+      metal: { emoji: "⚙️", description: "Metallic asteroid", density: "7.0-8.0 g/cm³", color: "text-muted-foreground" },
+      ice: { emoji: "🧊", description: "Icy comet", density: "0.5-1.0 g/cm³", color: "text-stellar-cyan" },
+      mixed: { emoji: "🌑", description: "Mixed composition", density: "2.0-5.0 g/cm³", color: "text-plasma-orange" }
     };
     return info[composition] || info.rock;
   };
 
   const getSizeThreat = (size) => {
     const sizeNum = parseInt(size);
-    if (sizeNum < 25) return { level: "Atmospheric Burnup", color: "text-success", description: "Harmlessly burns up in atmosphere" };
-    if (sizeNum < 140) return { level: "Local Damage", color: "text-cosmic-orange", description: "Localized destruction zone" };
-    if (sizeNum < 1000) return { level: "Regional Threat", color: "text-warning", description: "City-level devastation" };
-    return { level: "Global Catastrophe", color: "text-destructive", description: "Mass extinction event" };
+    if (sizeNum < 25) return { level: "Atmospheric Burnup", color: "text-mission-green", description: "Burns up in atmosphere" };
+    if (sizeNum < 140) return { level: "Local Damage", color: "text-plasma-orange", description: "Localized destruction" };
+    if (sizeNum < 1000) return { level: "Regional Threat", color: "text-destructive", description: "City-level devastation" };
+    return { level: "Global Event", color: "text-destructive", description: "Mass extinction event" };
   };
 
-  // Enhanced number formatting functions
   const formatLargeNumber = (number) => {
     if (number >= 1e12) return `${(number / 1e12).toFixed(1)}T`;
     if (number >= 1e9) return `${(number / 1e9).toFixed(1)}B`;
@@ -135,44 +132,41 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-full">
       {/* Parameters Panel */}
-      <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-cosmic">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+      <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
+        <CardHeader className="pb-3 sm:pb-4">
+          <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
             <div className="flex items-center space-x-3">
-              <div className="p-2 rounded-lg bg-gradient-cosmic">
-                <Zap className="w-5 h-5 text-primary-foreground" />
+              <div className="p-2 rounded-lg bg-gradient-quantum">
+                <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
-                <span className="text-xl">Asteroid Parameters</span>
-                <p className="text-sm text-muted-foreground font-normal mt-1">
-                  Configure the cosmic threat parameters
+                <span className="text-lg sm:text-xl text-quantum-blue">Threat Analysis</span>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                  Configure asteroid parameters
                 </p>
               </div>
             </div>
             
-            {/* Threat Level Indicator */}
+            {/* Threat Level Badge */}
             {asteroidParams.size && (
-              <div className="flex items-center space-x-2 mt-2 sm:mt-0">
-                <Badge className={`${getSizeThreat(asteroidParams.size).color.replace('text-', 'bg-')} text-white px-3 py-1`}>
-                  {getSizeThreat(asteroidParams.size).level}
-                </Badge>
-              </div>
+              <Badge className={`${getSizeThreat(asteroidParams.size).color.replace('text-', 'bg-')} text-white px-3 py-1 text-xs flex-shrink-0`}>
+                {getSizeThreat(asteroidParams.size).level}
+              </Badge>
             )}
           </CardTitle>
         </CardHeader>
         
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6">
           {/* Size Input */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Label htmlFor="size" className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
               <div className="flex items-center space-x-2">
-                <Target className="w-4 h-4 text-cosmic-orange" />
-                <span className="font-medium">Size (meters)</span>
-                <Info className="w-3 h-3 text-muted-foreground" />
+                <Target className="w-4 h-4 text-plasma-orange" />
+                <span className="font-medium text-sm">Diameter (meters)</span>
               </div>
-              <Badge variant="outline" className="text-xs w-fit">
+              <Badge variant="outline" className="text-xs border-quantum-blue/30 text-quantum-blue">
                 {getSizeThreat(asteroidParams.size).level}
               </Badge>
             </Label>
@@ -183,8 +177,8 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
               max="10000"
               value={asteroidParams.size}
               onChange={(e) => setAsteroidParams(prev => ({ ...prev, size: e.target.value }))}
-              className="bg-background/50 border-border/50 focus:border-primary transition-all duration-300"
-              placeholder="Enter asteroid diameter"
+              className="bg-background/50 border-border/50 focus:border-quantum-blue h-10 sm:h-11"
+              placeholder="Enter diameter"
             />
             <p className="text-xs text-muted-foreground">
               {getSizeThreat(asteroidParams.size).description}
@@ -192,15 +186,10 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
           </div>
 
           {/* Velocity Input */}
-          <div className="space-y-3">
-            <Label htmlFor="velocity" className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="w-4 h-4 text-cosmic-blue" />
-                <span className="font-medium">Velocity (km/s)</span>
-              </div>
-              <Badge variant="outline" className="text-xs w-fit">
-                Typical: 11-72 km/s
-              </Badge>
+          <div className="space-y-2">
+            <Label htmlFor="velocity" className="flex items-center space-x-2">
+              <TrendingUp className="w-4 h-4 text-stellar-cyan" />
+              <span className="font-medium text-sm">Velocity (km/s)</span>
             </Label>
             <Input
               id="velocity"
@@ -210,18 +199,17 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
               step="0.1"
               value={asteroidParams.velocity}
               onChange={(e) => setAsteroidParams(prev => ({ ...prev, velocity: e.target.value }))}
-              className="bg-background/50 border-border/50 focus:border-primary transition-all duration-300"
+              className="bg-background/50 border-border/50 focus:border-stellar-cyan h-10 sm:h-11"
               placeholder="Impact velocity"
             />
           </div>
 
-          {/* Density and Composition Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Density Input */}
-            <div className="space-y-3">
+          {/* Density and Angle Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
               <Label htmlFor="density" className="flex items-center space-x-2">
-                <Activity className="w-4 h-4 text-success" />
-                <span className="font-medium">Density (g/cm³)</span>
+                <Activity className="w-4 h-4 text-mission-green" />
+                <span className="font-medium text-sm">Density (g/cm³)</span>
               </Label>
               <Input
                 id="density"
@@ -231,22 +219,15 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
                 step="0.1"
                 value={asteroidParams.density}
                 onChange={(e) => setAsteroidParams(prev => ({ ...prev, density: e.target.value }))}
-                className="bg-background/50 border-border/50 focus:border-primary transition-all duration-300"
-                placeholder="Material density"
+                className="bg-background/50 border-border/50 focus:border-mission-green h-10 sm:h-11"
+                placeholder="Density"
               />
             </div>
 
-            {/* Approach Angle */}
-            <div className="space-y-3">
-              <Label htmlFor="angle" className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Activity className="w-4 h-4 text-warning" />
-                  <span className="font-medium">Approach Angle (°)</span>
-                </div>
-                <Badge variant="outline" className="text-xs">
-                  {parseInt(asteroidParams.angle) < 30 ? "Shallow" : 
-                   parseInt(asteroidParams.angle) < 60 ? "Moderate" : "Steep"}
-                </Badge>
+            <div className="space-y-2">
+              <Label htmlFor="angle" className="flex items-center space-x-2">
+                <Activity className="w-4 h-4 text-plasma-orange" />
+                <span className="font-medium text-sm">Angle (°)</span>
               </Label>
               <Input
                 id="angle"
@@ -255,98 +236,89 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
                 max="90"
                 value={asteroidParams.angle}
                 onChange={(e) => setAsteroidParams(prev => ({ ...prev, angle: e.target.value }))}
-                className="bg-background/50 border-border/50 focus:border-primary transition-all duration-300"
+                className="bg-background/50 border-border/50 focus:border-plasma-orange h-10 sm:h-11"
                 placeholder="Entry angle"
               />
             </div>
           </div>
 
           {/* Composition Select */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Label htmlFor="composition" className="flex items-center space-x-2">
-              <Globe2 className="w-4 h-4 text-cosmic-purple" />
-              <span className="font-medium">Composition</span>
+              <Zap className="w-4 h-4 text-stellar-cyan" />
+              <span className="font-medium text-sm">Composition</span>
             </Label>
             <Select 
               value={asteroidParams.composition} 
               onValueChange={(value) => setAsteroidParams(prev => ({ ...prev, composition: value }))}
             >
-              <SelectTrigger className="bg-background/50 border-border/50 focus:border-primary">
+              <SelectTrigger className="bg-background/50 border-border/50 focus:border-stellar-cyan h-10 sm:h-11">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-card border-border">
+              <SelectContent className="bg-card/95 backdrop-blur-xl border-border">
                 <SelectItem value="rock">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2">
                     <span>🪨</span>
-                    <div>
-                      <div>Rocky</div>
-                      <div className="text-xs text-muted-foreground">Stony asteroid</div>
-                    </div>
+                    <span>Rocky</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="metal">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2">
                     <span>⚙️</span>
-                    <div>
-                      <div>Metallic</div>
-                      <div className="text-xs text-muted-foreground">Iron-nickel core</div>
-                    </div>
+                    <span>Metallic</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="ice">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2">
                     <span>🧊</span>
-                    <div>
-                      <div>Icy</div>
-                      <div className="text-xs text-muted-foreground">Comet-like body</div>
-                    </div>
+                    <span>Icy</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="mixed">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2">
                     <span>🌑</span>
-                    <div>
-                      <div>Mixed</div>
-                      <div className="text-xs text-muted-foreground">Hybrid composition</div>
-                    </div>
+                    <span>Mixed</span>
                   </div>
                 </SelectItem>
               </SelectContent>
             </Select>
             
-            {/* Composition Info */}
+            {/* Simple Composition Info */}
             <div className="p-3 bg-muted/20 rounded-lg border border-border/30">
               <div className="flex items-center space-x-2 text-sm">
-                <span className="text-lg">{getCompositionInfo(asteroidParams.composition).emoji}</span>
+                <span>{getCompositionInfo(asteroidParams.composition).emoji}</span>
                 <div className="flex-1">
-                  <div className="font-medium">{getCompositionInfo(asteroidParams.composition).description}</div>
+                  <div className="font-medium text-quantum-blue">
+                    {getCompositionInfo(asteroidParams.composition).description}
+                  </div>
                   <div className="text-xs text-muted-foreground">
-                    Typical density: {getCompositionInfo(asteroidParams.composition).density}
+                    Density: {getCompositionInfo(asteroidParams.composition).density}
                   </div>
                 </div>
-                <div className={`w-3 h-3 rounded-full ${getCompositionInfo(asteroidParams.composition).color.replace('text-', 'bg-')}`} />
               </div>
             </div>
           </div>
 
-          <Separator className="my-6" />
+          <Separator className="my-4" />
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
             <Button 
               onClick={handleSimulate} 
               disabled={isLoading}
-              className="flex-1 bg-gradient-cosmic hover:shadow-glow transition-all duration-300 h-12"
+              className="flex-1 bg-gradient-quantum hover:shadow-command h-10 sm:h-12"
             >
               {isLoading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent mr-3" />
-                  Simulating...
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent mr-2" />
+                  <span className="hidden sm:inline">Analyzing...</span>
+                  <span className="sm:hidden">Analyzing</span>
                 </>
               ) : (
                 <>
-                  <Play className="w-5 h-5 mr-3" />
-                  Run Simulation
+                  <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  <span className="hidden sm:inline">Run Analysis</span>
+                  <span className="sm:hidden">Analyze</span>
                 </>
               )}
             </Button>
@@ -354,11 +326,11 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
             <Button 
               onClick={handleReset} 
               variant="outline" 
-              className="border-border hover:border-primary hover:bg-primary/5 h-12 px-6"
+              className="border-border h-10 sm:h-12 px-4 sm:px-6"
               disabled={isLoading}
             >
               <RotateCcw className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Reset</span>
+              Reset
             </Button>
           </div>
 
@@ -366,88 +338,85 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
           {isLoading && (
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Calculating trajectory...</span>
-                <span className="font-mono font-bold text-primary">{progress.toFixed(0)}%</span>
+                <span className="text-muted-foreground">Processing...</span>
+                <span className="font-mono text-quantum-blue">{progress.toFixed(0)}%</span>
               </div>
-              <Progress value={progress} className="h-2 bg-muted/30" />
-              <div className="text-xs text-center text-muted-foreground">
-                Processing orbital mechanics and impact physics
-              </div>
+              <Progress value={progress} className="h-2" />
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Results Section - Enhanced Responsive */}
+      {/* Results Section */}
       {results && (
-        <div className="mt-6 space-y-6">
+        <div className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
           {/* Impact Summary */}
-          <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-cosmic">
-            <CardHeader>
+          <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
+            <CardHeader className="pb-3 sm:pb-4">
               <CardTitle className="flex items-center space-x-3">
-                <div className="p-2 rounded-lg bg-gradient-to-r from-warning to-destructive">
+                <div className="p-2 rounded-lg bg-gradient-to-r from-plasma-orange to-destructive">
                   <AlertTriangle className="w-5 h-5 text-white" />
                 </div>
-                <span>Impact Analysis</span>
+                <span className="text-lg sm:text-xl text-plasma-orange">Impact Analysis</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Key Metrics Grid - Enhanced Responsive */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                <div className="text-center p-4 sm:p-6 bg-gradient-to-br from-primary/10 to-cosmic-blue/10 rounded-lg border border-primary/20">
-                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary mb-1 break-words">
+            <CardContent className="space-y-4 sm:space-y-6">
+              {/* Key Metrics */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-quantum-blue/10 rounded-lg border border-quantum-blue/20">
+                  <div className="text-2xl sm:text-3xl font-bold text-quantum-blue mb-1">
                     {(results.kineticEnergy / 1e15).toFixed(1)}
                   </div>
                   <div className="text-sm text-muted-foreground">Petajoules</div>
-                  <div className="text-xs text-primary mt-1">Kinetic Energy</div>
+                  <div className="text-xs text-quantum-blue mt-1">Kinetic Energy</div>
                 </div>
                 
-                <div className="text-center p-4 sm:p-6 bg-gradient-to-br from-cosmic-orange/10 to-warning/10 rounded-lg border border-cosmic-orange/20">
-                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-cosmic-orange mb-1 break-words">
+                <div className="text-center p-4 bg-plasma-orange/10 rounded-lg border border-plasma-orange/20">
+                  <div className="text-2xl sm:text-3xl font-bold text-plasma-orange mb-1">
                     {results.craterSize.toFixed(0)}
                   </div>
                   <div className="text-sm text-muted-foreground">Kilometers</div>
-                  <div className="text-xs text-cosmic-orange mt-1">Crater Diameter</div>
+                  <div className="text-xs text-plasma-orange mt-1">Crater Diameter</div>
                 </div>
               </div>
 
-              {/* Detailed Metrics - Mobile Friendly */}
+              {/* Detailed Metrics */}
               <div className="space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-muted/20 rounded-lg space-y-2 sm:space-y-0">
                   <div className="flex items-center space-x-3">
-                    <Activity className="w-5 h-5 text-warning" />
+                    <Activity className="w-5 h-5 text-destructive" />
                     <div>
-                      <div className="font-medium">Earthquake Magnitude</div>
-                      <div className="text-xs text-muted-foreground">Richter scale equivalent</div>
+                      <div className="font-medium">Seismic Magnitude</div>
+                      <div className="text-xs text-muted-foreground">Richter scale</div>
                     </div>
                   </div>
-                  <Badge className={`${getRiskLevel(results.earthquakeMagnitude).color} text-white px-3 py-1 w-fit`}>
-                    {results.earthquakeMagnitude.toFixed(1)} - {getRiskLevel(results.earthquakeMagnitude).level}
+                  <Badge className={`${getThreatLevel(results.earthquakeMagnitude).color} text-white px-3 py-1`}>
+                    {results.earthquakeMagnitude.toFixed(1)} - {getThreatLevel(results.earthquakeMagnitude).level}
                   </Badge>
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-muted/20 rounded-lg space-y-2 sm:space-y-0">
                   <div className="flex items-center space-x-3">
-                    <Waves className="w-5 h-5 text-cosmic-blue" />
+                    <Target className="w-5 h-5 text-stellar-cyan" />
                     <div>
                       <div className="font-medium">Tsunami Risk</div>
-                      <div className="text-xs text-muted-foreground">Ocean impact effects</div>
+                      <div className="text-xs text-muted-foreground">Ocean impact</div>
                     </div>
                   </div>
-                  <Badge variant="outline" className="border-cosmic-blue text-cosmic-blue px-3 py-1 w-fit">
+                  <Badge variant="outline" className="border-stellar-cyan text-stellar-cyan px-3 py-1">
                     {results.tsunamiRisk}
                   </Badge>
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-muted/20 rounded-lg space-y-2 sm:space-y-0">
                   <div className="flex items-center space-x-3">
-                    <Globe2 className="w-5 h-5 text-success" />
+                    <Target className="w-5 h-5 text-mission-green" />
                     <div>
-                      <div className="font-medium">Impact Location</div>
-                      <div className="text-xs text-muted-foreground">Simulated impact zone</div>
+                      <div className="font-medium">Impact Zone</div>
+                      <div className="text-xs text-muted-foreground">Location</div>
                     </div>
                   </div>
-                  <span className="font-medium text-foreground px-3 py-1 w-fit">
+                  <span className="font-medium text-foreground px-3 py-1">
                     {results.impactLocation.region}
                   </span>
                 </div>
@@ -455,70 +424,52 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
             </CardContent>
           </Card>
 
-          {/* Damage Assessment - Fixed Container Overflow */}
-          <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-cosmic">
-            <CardHeader>
+          {/* Damage Assessment */}
+          <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
+            <CardHeader className="pb-3 sm:pb-4">
               <CardTitle className="flex items-center space-x-3">
-                <div className="p-2 rounded-lg bg-gradient-to-r from-destructive to-warning">
-                  <AlertTriangle className="w-5 h-5 text-white" />
+                <div className="p-2 rounded-lg bg-gradient-to-r from-destructive to-plasma-orange">
+                  <Zap className="w-5 h-5 text-white" />
                 </div>
-                <span>Damage Assessment</span>
+                <span className="text-lg sm:text-xl text-destructive">Damage Assessment</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Casualties - Flexible Container */}
-                <div className="flex flex-col items-center justify-center p-4 sm:p-6 bg-destructive/10 rounded-lg border border-destructive/20 min-h-[120px]">
-                  <div className="text-center space-y-2">
-                    <div className="text-lg sm:text-xl lg:text-2xl font-bold text-destructive break-words hyphens-auto">
-                      {formatLargeNumber(results.damage.casualties)}
-                    </div>
-                    <div className="text-xs sm:text-sm text-muted-foreground">Estimated Casualties</div>
-                    {/* Raw number tooltip */}
-                    <div className="text-xs text-muted-foreground/60">
-                      ({results.damage.casualties.toLocaleString()})
-                    </div>
+                {/* Casualties */}
+                <div className="text-center p-4 bg-destructive/10 rounded-lg border border-destructive/20 min-h-[100px] flex flex-col justify-center">
+                  <div className="text-xl sm:text-2xl font-bold text-destructive">
+                    {formatLargeNumber(results.damage.casualties)}
                   </div>
+                  <div className="text-xs text-muted-foreground">Casualties</div>
                 </div>
                 
-                {/* Economic Loss - Flexible Container */}
-                <div className="flex flex-col items-center justify-center p-4 sm:p-6 bg-warning/10 rounded-lg border border-warning/20 min-h-[120px]">
-                  <div className="text-center space-y-2">
-                    <div className="text-lg sm:text-xl lg:text-2xl font-bold text-warning break-words hyphens-auto">
-                      {formatCurrency(results.damage.economicLoss)}
-                    </div>
-                    <div className="text-xs sm:text-sm text-muted-foreground">Economic Loss</div>
-                    {/* Raw number tooltip */}
-                    <div className="text-xs text-muted-foreground/60">
-                      (${results.damage.economicLoss.toLocaleString()})
-                    </div>
+                {/* Economic Loss */}
+                <div className="text-center p-4 bg-plasma-orange/10 rounded-lg border border-plasma-orange/20 min-h-[100px] flex flex-col justify-center">
+                  <div className="text-xl sm:text-2xl font-bold text-plasma-orange">
+                    {formatCurrency(results.damage.economicLoss)}
                   </div>
+                  <div className="text-xs text-muted-foreground">Economic Loss</div>
                 </div>
                 
-                {/* Affected Area - Flexible Container */}
-                <div className="flex flex-col items-center justify-center p-4 sm:p-6 bg-cosmic-orange/10 rounded-lg border border-cosmic-orange/20 sm:col-span-2 lg:col-span-1 min-h-[120px]">
-                  <div className="text-center space-y-2">
-                    <div className="text-lg sm:text-xl lg:text-2xl font-bold text-cosmic-orange break-words hyphens-auto">
-                      {formatArea(results.damage.affectedArea)}
-                    </div>
-                    <div className="text-xs sm:text-sm text-muted-foreground">Affected Area</div>
-                    {/* Raw number tooltip */}
-                    <div className="text-xs text-muted-foreground/60">
-                      ({results.damage.affectedArea.toLocaleString()} km²)
-                    </div>
+                {/* Affected Area */}
+                <div className="text-center p-4 bg-stellar-cyan/10 rounded-lg border border-stellar-cyan/20 sm:col-span-2 lg:col-span-1 min-h-[100px] flex flex-col justify-center">
+                  <div className="text-xl sm:text-2xl font-bold text-stellar-cyan">
+                    {formatArea(results.damage.affectedArea)}
                   </div>
+                  <div className="text-xs text-muted-foreground">Affected Area</div>
                 </div>
               </div>
               
-              {/* Additional Context Information */}
-              <div className="mt-6 p-4 bg-muted/10 rounded-lg border border-border/30">
-                <h4 className="text-sm font-semibold mb-3 flex items-center">
-                  <Info className="w-4 h-4 mr-2 text-cosmic-blue" />
+              {/* Context Info */}
+              <div className="mt-4 p-3 bg-muted/10 rounded-lg border border-border/30">
+                <h4 className="text-sm font-semibold mb-2 flex items-center text-quantum-blue">
+                  <Info className="w-4 h-4 mr-2" />
                   Impact Context
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                   <div>
-                    <span className="text-muted-foreground">Population Density:</span>
+                    <span className="text-muted-foreground">Population:</span>
                     <div className="font-medium">
                       {results.impactLocation.populationDensity || 'Variable'} people/km²
                     </div>
@@ -526,11 +477,11 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
                   <div>
                     <span className="text-muted-foreground">Infrastructure:</span>
                     <div className="font-medium">
-                      {results.impactLocation.infrastructure || 'Mixed development'}
+                      {results.impactLocation.infrastructure || 'Mixed'}
                     </div>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Warning Time:</span>
+                    <span className="text-muted-foreground">Warning:</span>
                     <div className="font-medium">
                       {results.impactLocation.warningTime || 'Hours to days'}
                     </div>

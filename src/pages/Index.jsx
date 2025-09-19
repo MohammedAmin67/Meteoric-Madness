@@ -36,7 +36,7 @@ const Index = () => {
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-8 sm:mb-12">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">
-                <span className="bg-gradient-to-r from-primary to-cosmic-blue bg-clip-text text-transparent">
+                <span className="text-quantum-blue bg-gradient-to-r from-primary to-cosmic-blue bg-clip-text">
                   Asteroid Impact Simulator
                 </span>
               </h2>

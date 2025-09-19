@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 import { 
   BarChart3, 
   TrendingUp, 
@@ -13,7 +14,10 @@ import {
   Globe, 
   AlertTriangle,
   Eye,
-  EyeOff
+  EyeOff,
+  Target,
+  Settings,
+  Info
 } from "lucide-react";
 
 const ImpactDataChart = ({ 
@@ -54,28 +58,31 @@ const ImpactDataChart = ({
     const g = svg.append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // Prepare data for visualization with better scaling
+    // Professional space theme colors
     const chartData = [
       { 
         category: 'Energy', 
         value: Math.max(0.1, data.kineticEnergy / 1e15), 
         unit: 'PJ',
-        color: '#9333ea',
-        description: 'Kinetic Energy'
+        color: '#00bcd4', // stellar-cyan
+        bgColor: 'rgba(0, 188, 212, 0.1)',
+        description: 'Kinetic Energy Released'
       },
       { 
         category: 'Crater', 
         value: Math.max(0.1, data.craterSize), 
         unit: 'km',
-        color: '#f97316',
-        description: 'Crater Size'
+        color: '#ff6b35', // plasma-orange
+        bgColor: 'rgba(255, 107, 53, 0.1)',
+        description: 'Impact Crater Diameter'
       },
       { 
         category: 'Magnitude', 
         value: Math.max(1, data.earthquakeMagnitude), 
         unit: '',
-        color: '#dc2626',
-        description: 'Earthquake'
+        color: '#6366f1', // quantum-blue
+        bgColor: 'rgba(99, 102, 241, 0.1)',
+        description: 'Seismic Magnitude'
       }
     ];
 
@@ -89,10 +96,11 @@ const ImpactDataChart = ({
       .domain([0, d3.max(chartData, d => d.value) * 1.2 || 1])
       .range([chartHeight, 0]);
 
-    // Create gradients for bars
+    // Create enhanced gradients and effects
     const defs = svg.append('defs');
     
     chartData.forEach((d, i) => {
+      // Professional gradient
       const gradient = defs.append('linearGradient')
         .attr('id', `gradient-${i}`)
         .attr('gradientUnits', 'userSpaceOnUse')
@@ -102,14 +110,19 @@ const ImpactDataChart = ({
       gradient.append('stop')
         .attr('offset', '0%')
         .attr('stop-color', d.color)
-        .attr('stop-opacity', 0.6);
+        .attr('stop-opacity', 0.7);
+      
+      gradient.append('stop')
+        .attr('offset', '50%')
+        .attr('stop-color', d.color)
+        .attr('stop-opacity', 0.9);
       
       gradient.append('stop')
         .attr('offset', '100%')
         .attr('stop-color', d.color)
         .attr('stop-opacity', 1);
 
-      // Glow filter
+      // Professional glow effect
       const filter = defs.append('filter')
         .attr('id', `glow-${i}`)
         .attr('x', '-50%')
@@ -118,7 +131,7 @@ const ImpactDataChart = ({
         .attr('height', '200%');
 
       filter.append('feGaussianBlur')
-        .attr('stdDeviation', '3')
+        .attr('stdDeviation', '4')
         .attr('result', 'coloredBlur');
 
       const feMerge = filter.append('feMerge');
@@ -126,7 +139,7 @@ const ImpactDataChart = ({
       feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
     });
 
-    // Add bars with animation
+    // Add professional bars with enhanced styling
     const bars = g.selectAll('.bar')
       .data(chartData)
       .enter().append('rect')
@@ -136,121 +149,107 @@ const ImpactDataChart = ({
       .attr('y', chartHeight)
       .attr('height', 0)
       .attr('fill', (d, i) => `url(#gradient-${i})`)
-      .attr('rx', isSmallScreen ? 4 : 8)
-      .attr('ry', isSmallScreen ? 4 : 8)
+      .attr('rx', isSmallScreen ? 6 : 10)
+      .attr('ry', isSmallScreen ? 6 : 10)
       .style('filter', (d, i) => `url(#glow-${i})`)
-      .style('cursor', 'pointer');
+      .style('cursor', 'pointer')
+      .style('stroke', (d) => d.color)
+      .style('stroke-width', '2')
+      .style('stroke-opacity', '0.5');
 
-    // Animate bars
+    // Professional animation
     bars.transition()
-      .duration(1200)
-      .delay((d, i) => i * 300)
-      .ease(d3.easeBackOut)
+      .duration(1500)
+      .delay((d, i) => i * 400)
+      .ease(d3.easeBackOut.overshoot(1.2))
       .attr('y', d => yScale(d.value))
       .attr('height', d => Math.max(2, chartHeight - yScale(d.value)));
 
-    // Add hover effects with properly contained tooltips
+    // Enhanced hover effects with professional tooltips
     bars.on('mouseover', function(event, d) {
       d3.select(this)
         .transition()
-        .duration(200)
-        .attr('opacity', 0.8);
+        .duration(300)
+        .style('stroke-opacity', '1')
+        .style('transform', 'scale(1.05)');
       
-      // Create tooltip that stays within bounds
+      // Professional tooltip positioning
       const barX = (xScale(d.category) || 0) + xScale.bandwidth() / 2;
       const barY = yScale(d.value);
       
-      // Calculate tooltip position to stay within chart bounds
-      const tooltipWidth = isSmallScreen ? 80 : 120;
-      const tooltipHeight = isSmallScreen ? 35 : 50;
+      const tooltipWidth = isSmallScreen ? 140 : 180;
+      const tooltipHeight = isSmallScreen ? 50 : 70;
       
       let tooltipX = barX;
-      let tooltipY = barY - 20;
+      let tooltipY = barY - 30;
       
-      // Adjust if tooltip would go outside chart
+      // Smart positioning to stay within bounds
       if (tooltipX - tooltipWidth/2 < 0) tooltipX = tooltipWidth/2;
       if (tooltipX + tooltipWidth/2 > chartWidth) tooltipX = chartWidth - tooltipWidth/2;
-      if (tooltipY - tooltipHeight < 0) tooltipY = barY + 40;
+      if (tooltipY - tooltipHeight < 0) tooltipY = barY + 50;
       
       const tooltip = g.append('g')
         .attr('class', 'tooltip')
         .attr('transform', `translate(${tooltipX}, ${tooltipY})`);
       
-      // Tooltip background with proper sizing
+      // Professional tooltip background
       const tooltipBg = tooltip.append('rect')
         .attr('x', -tooltipWidth/2)
         .attr('y', -tooltipHeight/2)
         .attr('width', tooltipWidth)
         .attr('height', tooltipHeight)
-        .attr('rx', 8)
-        .attr('ry', 8)
-        .attr('fill', 'rgba(0,0,0,0.95)')
+        .attr('rx', 12)
+        .attr('ry', 12)
+        .attr('fill', 'rgba(15, 23, 42, 0.95)')
         .attr('stroke', d.color)
         .attr('stroke-width', 2)
-        .style('filter', 'drop-shadow(0px 4px 12px rgba(0,0,0,0.3))')
+        .style('filter', 'drop-shadow(0px 8px 24px rgba(0,0,0,0.4))')
         .style('opacity', 0);
 
-      // Animate tooltip appearance
+      // Smooth tooltip animation
       tooltipBg.transition()
-        .duration(200)
+        .duration(300)
         .style('opacity', 1);
 
-      // Value text with better positioning
+      // Enhanced value display
       tooltip.append('text')
         .attr('text-anchor', 'middle')
-        .attr('y', isSmallScreen ? -8 : -12)
+        .attr('y', isSmallScreen ? -12 : -18)
         .attr('fill', 'white')
-        .attr('font-size', isSmallScreen ? '12px' : '16px')
-        .attr('font-weight', 'bold')
-        .text(`${d.value.toFixed(1)}${d.unit}`);
+        .attr('font-size', isSmallScreen ? '14px' : '18px')
+        .attr('font-weight', '700')
+        .text(`${d.value.toFixed(2)}${d.unit}`);
       
-      // Description text (responsive)
+      // Category label
+      tooltip.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('y', isSmallScreen ? 0 : -2)
+        .attr('fill', d.color)
+        .attr('font-size', isSmallScreen ? '11px' : '13px')
+        .attr('font-weight', '600')
+        .text(d.description);
+      
+      // Additional info for larger screens
       if (!isSmallScreen) {
         tooltip.append('text')
           .attr('text-anchor', 'middle')
-          .attr('y', 8)
+          .attr('y', 15)
           .attr('fill', '#94a3b8')
-          .attr('font-size', '12px')
-          .text(d.description);
+          .attr('font-size', '10px')
+          .text('Impact Assessment');
       }
     })
     .on('mouseout', function() {
       d3.select(this)
         .transition()
-        .duration(200)
-        .attr('opacity', 1);
+        .duration(300)
+        .style('stroke-opacity', '0.5')
+        .style('transform', 'scale(1)');
       
       g.select('.tooltip').remove();
     });
 
-    // Add value labels with better positioning
-    g.selectAll('.bar-label')
-      .data(chartData)
-      .enter().append('text')
-      .attr('class', 'bar-label')
-      .attr('x', d => (xScale(d.category) || 0) + xScale.bandwidth() / 2)
-      .attr('y', chartHeight + (isSmallScreen ? 20 : 25))
-      .attr('text-anchor', 'middle')
-      .attr('fill', '#e2e8f0')
-      .attr('font-size', isSmallScreen ? '11px' : '14px')
-      .attr('font-weight', 'bold')
-      .each(function(d) {
-        // Wrap long text on small screens
-        const text = d3.select(this);
-        const value = `${d.value.toFixed(1)}${d.unit}`;
-        
-        if (isSmallScreen && value.length > 6) {
-          text.text(d.value.toFixed(0) + d.unit);
-        } else {
-          text.text(value);
-        }
-      })
-      .transition()
-      .duration(1200)
-      .delay((d, i) => i * 300 + 600)
-      .attr('y', d => Math.max(15, yScale(d.value) - (isSmallScreen ? 6 : 10)));
-
-    // Add x-axis with responsive styling
+    // Professional axis styling
     const xAxis = d3.axisBottom(xScale);
     const xAxisGroup = g.append('g')
       .attr('class', 'x-axis')
@@ -258,17 +257,17 @@ const ImpactDataChart = ({
       .call(xAxis);
 
     xAxisGroup.selectAll('text')
-      .attr('fill', '#94a3b8')
-      .attr('font-size', isSmallScreen ? '10px' : '13px')
-      .attr('font-weight', '500')
+      .attr('fill', '#cbd5e1')
+      .attr('font-size', isSmallScreen ? '11px' : '14px')
+      .attr('font-weight', '600')
       .style('text-anchor', 'middle');
 
-    // Add y-axis with better responsive handling
-    const yAxisTicks = isSmallScreen ? 3 : 5;
+    // Enhanced y-axis
+    const yAxisTicks = isSmallScreen ? 4 : 6;
     const yAxis = d3.axisLeft(yScale)
       .ticks(yAxisTicks)
       .tickFormat(d => {
-        if (d >= 1000) return `${(d/1000).toFixed(0)}k`;
+        if (d >= 1000) return `${(d/1000).toFixed(1)}k`;
         if (d >= 100) return d.toFixed(0);
         return d.toFixed(1);
       });
@@ -279,18 +278,19 @@ const ImpactDataChart = ({
 
     yAxisGroup.selectAll('text')
       .attr('fill', '#94a3b8')
-      .attr('font-size', isSmallScreen ? '9px' : '11px');
+      .attr('font-size', isSmallScreen ? '10px' : '12px')
+      .attr('font-weight', '500');
 
-    // Style axes
+    // Professional axis styling
     g.selectAll('.domain')
       .attr('stroke', '#475569')
       .attr('stroke-width', 2);
     
     g.selectAll('.tick line')
       .attr('stroke', '#475569')
-      .attr('stroke-width', 1);
+      .attr('stroke-width', 1.5);
 
-    // Add grid lines (responsive)
+    // Enhanced grid lines
     g.selectAll('.grid-line')
       .data(yScale.ticks(yAxisTicks))
       .enter().append('line')
@@ -299,99 +299,138 @@ const ImpactDataChart = ({
       .attr('x2', chartWidth)
       .attr('y1', d => yScale(d))
       .attr('y2', d => yScale(d))
-      .attr('stroke', '#374151')
-      .attr('stroke-width', 0.5)
-      .attr('stroke-dasharray', '2,2')
-      .attr('opacity', 0.3);
+      .attr('stroke', '#334155')
+      .attr('stroke-width', 1)
+      .attr('stroke-dasharray', '4,4')
+      .attr('opacity', 0.4);
+
+    // Professional value labels
+    g.selectAll('.bar-label')
+      .data(chartData)
+      .enter().append('text')
+      .attr('class', 'bar-label')
+      .attr('x', d => (xScale(d.category) || 0) + xScale.bandwidth() / 2)
+      .attr('y', chartHeight + (isSmallScreen ? 25 : 30))
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#e2e8f0')
+      .attr('font-size', isSmallScreen ? '12px' : '15px')
+      .attr('font-weight', '700')
+      .text(d => `${d.value.toFixed(1)}${d.unit}`)
+      .style('opacity', 0)
+      .transition()
+      .duration(1500)
+      .delay((d, i) => i * 400 + 800)
+      .style('opacity', 1)
+      .attr('y', d => Math.max(20, yScale(d.value) - (isSmallScreen ? 8 : 12)));
 
   }, [data, width, height, activeTab]);
 
-  // Enhanced responsive timeline chart
+  // Enhanced professional timeline chart
   const createTimelineChart = () => {
     if (!data) return null;
 
     const timelineData = [
       { 
         time: '0s', 
-        event: 'Impact', 
+        event: 'Impact Event', 
         intensity: 100, 
-        color: '#dc2626',
-        description: 'Initial asteroid collision with Earth'
+        color: '#6366f1', // quantum-blue
+        bgColor: 'rgba(99, 102, 241, 0.1)',
+        description: 'Initial asteroid collision with Earth surface'
       },
       { 
         time: '1min', 
-        event: 'Shockwave', 
+        event: 'Shockwave Propagation', 
         intensity: 85, 
-        color: '#f97316',
-        description: 'Seismic waves propagate from impact site'
+        color: '#ff6b35', // plasma-orange
+        bgColor: 'rgba(255, 107, 53, 0.1)',
+        description: 'Seismic waves propagate from impact epicenter'
       },
       { 
         time: '10min', 
-        event: 'Ejecta Fall', 
+        event: 'Ejecta Fallback', 
         intensity: 65, 
-        color: '#eab308',
-        description: 'Debris and molten material rains down'
+        color: '#00bcd4', // stellar-cyan
+        bgColor: 'rgba(0, 188, 212, 0.1)',
+        description: 'Debris and molten material begins to fall'
       },
       { 
         time: '1hr', 
         event: 'Seismic Activity', 
         intensity: 45, 
-        color: '#22d3ee',
+        color: '#10b981', // mission-green
+        bgColor: 'rgba(16, 185, 129, 0.1)',
         description: 'Secondary earthquakes triggered globally'
       },
       { 
         time: '24hr', 
         event: 'Climate Effects', 
         intensity: 25, 
-        color: '#8b5cf6',
-        description: 'Atmospheric dust affects global climate'
+        color: '#8b5cf6', // purple
+        bgColor: 'rgba(139, 92, 246, 0.1)',
+        description: 'Atmospheric dust begins affecting climate'
       }
     ];
 
     return (
-      <div className="mt-4 sm:mt-8">
-        <h4 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4 flex items-center">
-          <TrendingUp className="w-4 sm:w-5 h-4 sm:h-5 mr-2 text-cosmic-blue" />
-          Impact Timeline
-        </h4>
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="p-2 rounded-lg bg-gradient-quantum">
+            <TrendingUp className="w-5 h-5 text-white" />
+          </div>
+          <h4 className="text-lg font-bold text-quantum-blue">Impact Timeline Analysis</h4>
+        </div>
         
         <div className="space-y-3 sm:space-y-4">
           {timelineData.map((item, index) => (
-            <div key={index} className="group hover:bg-muted/20 p-2 sm:p-3 rounded-lg transition-colors">
-              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                <div className="w-full sm:w-16 text-xs sm:text-sm text-muted-foreground font-mono font-bold flex-shrink-0">
-                  {item.time}
+            <div 
+              key={index} 
+              className="group hover:shadow-command p-4 rounded-lg border border-border/50 transition-all duration-300 hover:scale-[1.02]"
+              style={{ backgroundColor: item.bgColor }}
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                <div className="w-full sm:w-20 flex-shrink-0">
+                  <div className="text-center p-2 rounded-lg border-2" style={{ borderColor: item.color }}>
+                    <div className="text-sm font-bold" style={{ color: item.color }}>
+                      {item.time}
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 space-y-1 sm:space-y-0">
-                    <span className="text-sm font-medium text-foreground truncate">{item.event}</span>
-                    <div className="flex items-center space-x-2 flex-shrink-0">
-                      <span className="text-xs text-muted-foreground">{item.intensity}%</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 space-y-2 sm:space-y-0">
+                    <h5 className="text-base font-bold text-quantum-blue truncate">{item.event}</h5>
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Intensity: {item.intensity}%
+                      </span>
                       <Badge 
-                        variant="outline" 
-                        className="text-xs"
-                        style={{ borderColor: item.color, color: item.color }}
+                        className="text-xs px-3 py-1"
+                        style={{ 
+                          backgroundColor: item.color, 
+                          color: 'white',
+                          border: 'none'
+                        }}
                       >
                         Active
                       </Badge>
                     </div>
                   </div>
                   
-                  <div className="w-full bg-muted/30 rounded-full h-2 sm:h-3 mb-2">
+                  <div className="w-full bg-muted/30 rounded-full h-3 mb-3 overflow-hidden">
                     <div 
-                      className="h-2 sm:h-3 rounded-full transition-all duration-1000 delay-300 relative overflow-hidden"
+                      className="h-3 rounded-full transition-all duration-1500 delay-300 relative overflow-hidden"
                       style={{ 
                         width: `${item.intensity}%`,
                         backgroundColor: item.color,
-                        boxShadow: `0 0 10px ${item.color}50`
+                        boxShadow: `0 0 15px ${item.color}60`
                       }}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-40 animate-pulse" />
                     </div>
                   </div>
                   
-                  <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors line-clamp-2">
+                  <p className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                     {item.description}
                   </p>
                 </div>
@@ -403,7 +442,7 @@ const ImpactDataChart = ({
     );
   };
 
-  // Smart number formatting to prevent overflow
+  // Smart number formatting
   const formatNumber = (value, type = 'default') => {
     if (!value) return '0';
     
@@ -437,7 +476,7 @@ const ImpactDataChart = ({
     }
   };
 
-  // Enhanced responsive damage breakdown with auto-expanding containers
+  // Enhanced professional damage breakdown
   const createDamageBreakdown = () => {
     if (!data) return null;
 
@@ -446,93 +485,121 @@ const ImpactDataChart = ({
         category: 'Infrastructure',
         percentage: 35,
         cost: data.damage.economicLoss * 0.35,
-        color: '#dc2626',
-        icon: '🏗️'
+        color: '#6366f1', // quantum-blue
+        bgColor: 'rgba(99, 102, 241, 0.1)',
+        icon: '🏗️',
+        description: 'Buildings, roads, utilities'
       },
       {
         category: 'Environmental',
         percentage: 25,
         cost: data.damage.economicLoss * 0.25,
-        color: '#059669',
-        icon: '🌍'
+        color: '#10b981', // mission-green
+        bgColor: 'rgba(16, 185, 129, 0.1)',
+        icon: '🌍',
+        description: 'Ecosystem disruption'
       },
       {
         category: 'Economic',
         percentage: 20,
         cost: data.damage.economicLoss * 0.20,
-        color: '#f97316',
-        icon: '💰'
+        color: '#ff6b35', // plasma-orange
+        bgColor: 'rgba(255, 107, 53, 0.1)',
+        icon: '💰',
+        description: 'Market losses, trade'
       },
       {
         category: 'Agricultural',
         percentage: 15,
         cost: data.damage.economicLoss * 0.15,
-        color: '#22d3ee',
-        icon: '🌾'
+        color: '#00bcd4', // stellar-cyan
+        bgColor: 'rgba(0, 188, 212, 0.1)',
+        icon: '🌾',
+        description: 'Crop damage, livestock'
       },
       {
         category: 'Other',
         percentage: 5,
         cost: data.damage.economicLoss * 0.05,
-        color: '#8b5cf6',
-        icon: '📊'
+        color: '#8b5cf6', // purple
+        bgColor: 'rgba(139, 92, 246, 0.1)',
+        icon: '📊',
+        description: 'Miscellaneous impacts'
       }
     ];
 
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {damageCategories.map((item, index) => (
-          <div 
-            key={index}
-            className="p-3 sm:p-4 bg-muted/20 rounded-lg border border-border/30 hover:shadow-lg transition-all duration-300 min-w-0 flex-1"
-          >
-            <div className="flex items-start justify-between mb-3 gap-2">
-              <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-                <span className="text-lg sm:text-xl flex-shrink-0">{item.icon}</span>
-                <div className="min-w-0 flex-1">
-                  <h4 className="text-xs sm:text-sm font-semibold text-foreground truncate">{item.category}</h4>
-                  <p className="text-xs text-muted-foreground">Damage estimate</p>
-                </div>
-              </div>
-              <div className="text-right flex-shrink-0 min-w-0">
-                <div className="text-sm sm:text-base font-bold truncate" style={{ color: item.color }}>
-                  {item.percentage}%
-                </div>
-                <div className="text-xs text-muted-foreground truncate">
-                  {formatNumber(item.cost, 'currency')}
-                </div>
-              </div>
-            </div>
-            
-            <div className="w-full bg-muted/30 rounded-full h-2">
-              <div 
-                className="h-2 rounded-full transition-all duration-1000"
-                style={{ 
-                  width: `${item.percentage}%`,
-                  backgroundColor: item.color,
-                  boxShadow: `0 0 8px ${item.color}50`
-                }}
-              />
-            </div>
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="p-2 rounded-lg bg-gradient-quantum">
+            <Settings className="w-5 h-5 text-white" />
           </div>
-        ))}
+          <h4 className="text-lg font-bold text-quantum-blue">Damage Assessment Breakdown</h4>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {damageCategories.map((item, index) => (
+            <Card 
+              key={index}
+              className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command hover:shadow-glow transition-all duration-300 hover:scale-[1.02]"
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-4 gap-3">
+                  <div className="flex items-center space-x-3 min-w-0 flex-1">
+                    <div 
+                      className="p-2 rounded-lg text-xl flex-shrink-0"
+                      style={{ backgroundColor: item.bgColor }}
+                    >
+                      {item.icon}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h5 className="text-sm font-bold text-quantum-blue truncate">{item.category}</h5>
+                      <p className="text-xs text-muted-foreground">{item.description}</p>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-lg font-bold" style={{ color: item.color }}>
+                      {item.percentage}%
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {formatNumber(item.cost, 'currency')}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="w-full bg-muted/30 rounded-full h-3 overflow-hidden">
+                  <div 
+                    className="h-3 rounded-full transition-all duration-1500 delay-300 relative overflow-hidden"
+                    style={{ 
+                      width: `${item.percentage}%`,
+                      backgroundColor: item.color,
+                      boxShadow: `0 0 10px ${item.color}50`
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   };
 
   return (
     <div className="w-full max-w-full space-y-4 sm:space-y-6">
-      <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-cosmic w-full">
+      <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command w-full">
         <CardHeader className="pb-3 sm:pb-6">
-          <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-              <div className="p-2 rounded-lg bg-gradient-to-r from-primary to-cosmic-orange flex-shrink-0">
-                <BarChart3 className="w-4 sm:w-5 h-4 sm:h-5 text-white" />
+          <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+            <div className="flex items-center space-x-3 min-w-0 flex-1">
+              <div className="p-3 rounded-lg bg-gradient-quantum flex-shrink-0">
+                <BarChart3 className="w-6 h-6 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="text-lg sm:text-xl">Impact Metrics</span>
-                <div className="text-xs sm:text-sm text-muted-foreground font-normal">
-                  Comprehensive damage analysis
+                <span className="text-xl font-bold text-quantum-blue">Impact Analytics</span>
+                <div className="text-sm text-muted-foreground font-normal">
+                  Comprehensive damage assessment and analysis
                 </div>
               </div>
             </div>
@@ -541,7 +608,7 @@ const ImpactDataChart = ({
               variant="outline"
               size="sm"
               onClick={() => setShowComparison(!showComparison)}
-              className="border-border hover:border-primary w-full sm:w-auto flex-shrink-0"
+              className="border-border hover:text-quantum-blue hover:border-blue hover:bg-quantum-blue/5 w-full sm:w-auto flex-shrink-0 transition-all duration-300"
             >
               {showComparison ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
               {showComparison ? 'Hide' : 'Show'} Details
@@ -552,91 +619,146 @@ const ImpactDataChart = ({
         <CardContent className="px-3 sm:px-6 w-full">
           {data ? (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6 w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-muted/30 h-auto">
+              <TabsList className="grid w-full grid-cols-3 bg-card/60 border-border/50 backdrop-blur-sm h-auto p-1">
                 <TabsTrigger 
                   value="overview" 
-                  className="data-[state=active]:bg-gradient-cosmic text-xs sm:text-sm py-2"
+                  className="data-[state=active]:bg-gradient-quantum data-[state=active]:text-white text-xs sm:text-sm py-3 h-12"
                 >
-                  Overview
+                  <Target className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Overview</span>
+                  <span className="sm:hidden">Data</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="timeline" 
-                  className="data-[state=active]:bg-gradient-cosmic text-xs sm:text-sm py-2"
+                  className="data-[state=active]:bg-gradient-quantum data-[state=active]:text-white text-xs sm:text-sm py-3 h-12"
                 >
-                  Timeline
+                  <TrendingUp className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Timeline</span>
+                  <span className="sm:hidden">Time</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="breakdown" 
-                  className="data-[state=active]:bg-gradient-cosmic text-xs sm:text-sm py-2"
+                  className="data-[state=active]:bg-gradient-quantum data-[state=active]:text-white text-xs sm:text-sm py-3 h-12"
                 >
-                  Breakdown
+                  <Settings className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Breakdown</span>
+                  <span className="sm:hidden">Info</span>
                 </TabsTrigger>
               </TabsList>
 
               {/* Overview Tab */}
               <TabsContent value="overview" className="space-y-4 sm:space-y-6 w-full">
-                <div ref={chartContainerRef} className="w-full min-h-[300px] sm:min-h-[350px] overflow-hidden">
+                <div ref={chartContainerRef} className="w-full min-h-[300px] sm:min-h-[350px] overflow-hidden bg-muted/10 rounded-lg border border-border/30 p-4">
                   <svg ref={svgRef} className="w-full h-full"></svg>
                 </div>
 
-                {/* Key Stats - Enhanced with better number formatting */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full">
-                  <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-primary/10 to-cosmic-blue/10 rounded-lg border border-primary/20 min-w-0">
-                    <Zap className="w-5 sm:w-6 h-5 sm:h-6 text-primary mx-auto mb-2" />
-                    <div className="text-lg sm:text-xl font-bold text-primary break-words">
-                      {(data.kineticEnergy / 1e15).toFixed(1)} PJ
-                    </div>
-                    <div className="text-xs text-muted-foreground">Energy Released</div>
-                  </div>
+                {/* Enhanced Key Stats */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
+                  <Card className="bg-stellar-cyan/10 border-stellar-cyan/20 backdrop-blur-sm">
+                    <CardContent className="p-4 text-center">
+                      <div className="p-3 rounded-full bg-gradient-to-br from-stellar-cyan to-quantum-blue w-fit mx-auto mb-3">
+                        <Zap className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="text-2xl font-bold text-stellar-cyan mb-1">
+                        {(data.kineticEnergy / 1e15).toFixed(1)} PJ
+                      </div>
+                      <div className="text-sm text-muted-foreground">Kinetic Energy Released</div>
+                      <div className="text-xs text-stellar-cyan mt-1 font-medium">
+                        Equivalent to {((data.kineticEnergy / 1e15) * 0.24).toFixed(1)} megatons TNT
+                      </div>
+                    </CardContent>
+                  </Card>
                   
-                  <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-cosmic-orange/10 to-warning/10 rounded-lg border border-cosmic-orange/20 min-w-0">
-                    <Globe className="w-5 sm:w-6 h-5 sm:h-6 text-cosmic-orange mx-auto mb-2" />
-                    <div className="text-lg sm:text-xl font-bold text-cosmic-orange break-words">
-                      {data.craterSize.toFixed(0)} km
-                    </div>
-                    <div className="text-xs text-muted-foreground">Crater Diameter</div>
-                  </div>
+                  <Card className="bg-plasma-orange/10 border-plasma-orange/20 backdrop-blur-sm">
+                    <CardContent className="p-4 text-center">
+                      <div className="p-3 rounded-full bg-gradient-to-br from-plasma-orange to-destructive w-fit mx-auto mb-3">
+                        <Globe className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="text-2xl font-bold text-plasma-orange mb-1">
+                        {data.craterSize.toFixed(1)} km
+                      </div>
+                      <div className="text-sm text-muted-foreground">Impact Crater Diameter</div>
+                      <div className="text-xs text-plasma-orange mt-1 font-medium">
+                        Area: {(Math.PI * Math.pow(data.craterSize/2, 2)).toFixed(0)} km²
+                      </div>
+                    </CardContent>
+                  </Card>
                   
-                  <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-destructive/10 to-warning/10 rounded-lg border border-destructive/20 min-w-0 sm:col-span-1">
-                    <Activity className="w-5 sm:w-6 h-5 sm:h-6 text-destructive mx-auto mb-2" />
-                    <div className="text-lg sm:text-xl font-bold text-destructive break-words">
-                      {data.earthquakeMagnitude.toFixed(1)}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Earthquake Magnitude</div>
-                  </div>
+                  <Card className="bg-quantum-blue/10 border-quantum-blue/20 backdrop-blur-sm">
+                    <CardContent className="p-4 text-center">
+                      <div className="p-3 rounded-full bg-gradient-to-br from-quantum-blue to-stellar-cyan w-fit mx-auto mb-3">
+                        <Activity className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="text-2xl font-bold text-quantum-blue mb-1">
+                        {data.earthquakeMagnitude.toFixed(1)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Seismic Magnitude</div>
+                      <div className="text-xs text-quantum-blue mt-1 font-medium">
+                        {data.earthquakeMagnitude >= 7 ? 'Major' : data.earthquakeMagnitude >= 6 ? 'Strong' : 'Moderate'} Earthquake
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
-                {/* Enhanced Damage Summary with Smart Formatting */}
+                {/* Enhanced Damage Summary */}
                 {showComparison && (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-                    <div className="p-4 bg-destructive/10 rounded-lg border border-destructive/20 min-w-0">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />
-                        <span className="text-sm font-medium text-destructive">Casualties</span>
+                  <div className="space-y-4">
+                    <Separator className="my-4" />
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="p-2 rounded-lg bg-gradient-quantum">
+                        <Info className="w-5 h-5 text-white" />
                       </div>
-                      <div className="text-xl font-bold text-destructive break-words">
-                        {formatNumber(data.damage.casualties, 'casualties')}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">Estimated deaths</div>
+                      <h4 className="text-lg font-bold text-quantum-blue">Damage Assessment Summary</h4>
                     </div>
 
-                    <div className="p-4 bg-warning/10 rounded-lg border border-warning/20 min-w-0">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-warning text-sm">💰</span>
-                        <span className="text-sm font-medium text-warning">Economic Loss</span>
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">Total damages</div>
-                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <Card className="bg-destructive/10 border-destructive/20 backdrop-blur-sm">
+                        <CardContent className="p-4">
+                          <div className="flex items-center space-x-3 mb-3">
+                            <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0" />
+                            <span className="text-sm font-bold text-destructive">Human Impact</span>
+                          </div>
+                          <div className="text-xl font-bold text-destructive mb-1">
+                            {formatNumber(data.damage.casualties, 'casualties')}
+                          </div>
+                          <div className="text-xs text-muted-foreground">Estimated casualties</div>
+                          <div className="mt-2 w-full bg-muted/30 rounded-full h-2">
+                            <div className="h-2 bg-destructive rounded-full w-full opacity-80" />
+                          </div>
+                        </CardContent>
+                      </Card>
 
-                    <div className="p-4 bg-cosmic-orange/10 rounded-lg border border-cosmic-orange/20 min-w-0">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <Globe className="w-4 h-4 text-cosmic-orange flex-shrink-0" />
-                        <span className="text-sm font-medium text-cosmic-orange">Affected Area</span>
-                      </div>
-                      <div className="text-xl font-bold text-cosmic-orange break-words">
-                        {formatNumber(data.damage.affectedArea, 'area')}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">Impact zone</div>
+                      <Card className="bg-plasma-orange/10 border-plasma-orange/20 backdrop-blur-sm">
+                        <CardContent className="p-4">
+                          <div className="flex items-center space-x-3 mb-3">
+                            <span className="text-plasma-orange text-lg">💰</span>
+                            <span className="text-sm font-bold text-plasma-orange">Economic Impact</span>
+                          </div>
+                          <div className="text-xl font-bold text-plasma-orange mb-1">
+                            {formatNumber(data.damage.economicLoss, 'currency')}
+                          </div>
+                          <div className="text-xs text-muted-foreground">Total economic losses</div>
+                          <div className="mt-2 w-full bg-muted/30 rounded-full h-2">
+                            <div className="h-2 bg-plasma-orange rounded-full w-4/5 opacity-80" />
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-mission-green/10 border-mission-green/20 backdrop-blur-sm">
+                        <CardContent className="p-4">
+                          <div className="flex items-center space-x-3 mb-3">
+                            <Globe className="w-5 h-5 text-mission-green flex-shrink-0" />
+                            <span className="text-sm font-bold text-mission-green">Geographic Impact</span>
+                          </div>
+                          <div className="text-xl font-bold text-mission-green mb-1">
+                            {formatNumber(data.damage.affectedArea, 'area')}
+                          </div>
+                          <div className="text-xs text-muted-foreground">Affected area</div>
+                          <div className="mt-2 w-full bg-muted/30 rounded-full h-2">
+                            <div className="h-2 bg-mission-green rounded-full w-3/5 opacity-80" />
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
                   </div>
                 )}
@@ -648,22 +770,26 @@ const ImpactDataChart = ({
               </TabsContent>
 
               {/* Breakdown Tab */}
-              <TabsContent value="breakdown" className="space-y-4 sm:space-y-6 w-full">
-                <div className="flex items-center space-x-2 mb-4">
-                  <AlertTriangle className="w-4 sm:w-5 h-4 sm:h-5 text-warning" />
-                  <h3 className="text-base sm:text-lg font-semibold">Damage Analysis</h3>
-                </div>
+              <TabsContent value="breakdown" className="w-full">
                 {createDamageBreakdown()}
               </TabsContent>
             </Tabs>
           ) : (
-            <div className="text-center py-8 sm:py-12 w-full">
-              <BarChart3 className="w-12 sm:w-16 h-12 sm:h-16 text-muted-foreground mx-auto mb-4 animate-glow-pulse" />
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">Ready for Analysis</h3>
-              <p className="text-sm sm:text-base text-muted-foreground px-4">
-                Run a simulation to see comprehensive impact metrics and damage analysis
-              </p>
-            </div>
+            <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
+              <CardContent className="text-center py-12 w-full">
+                <div className="p-4 rounded-full bg-gradient-quantum w-fit mx-auto mb-6">
+                  <BarChart3 className="w-16 h-16 text-white animate-pulse" />
+                </div>
+                <h3 className="text-xl font-bold text-quantum-blue mb-3">Analytics Ready</h3>
+                <p className="text-muted-foreground px-4 max-w-md mx-auto">
+                  Run a simulation to generate comprehensive impact metrics, damage assessments, and timeline analysis
+                </p>
+                <div className="mt-6 flex items-center justify-center space-x-2 text-sm text-muted-foreground">
+                  <Target className="w-4 h-4" />
+                  <span>Professional data visualization awaits your input</span>
+                </div>
+              </CardContent>
+            </Card>
           )}
         </CardContent>
       </Card>
