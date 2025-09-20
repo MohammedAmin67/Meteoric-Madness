@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
+import AboutSection from "@/components/AboutSection"; // ← Add this import
 import SimulationPanel from "@/components/SimulationPanel";
 import OrbitalVisualization from "@/components/OrbitalVisualization";
 import ImpactDataChart from "@/components/ImpactDataChart";
@@ -31,12 +32,15 @@ const Index = () => {
       <main className="relative">
         <HeroSection />
         
+        {/* About Section - New Addition */}
+        <AboutSection />
+        
         {/* Simulation Section - Fully Responsive */}
         <section id="simulation" className="py-10 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-8 sm:mb-12">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">
-                <span className="text-quantum-blue bg-gradient-to-r from-primary to-cosmic-blue bg-clip-text">
+                <span className="bg-gradient-to-r from-quantum-blue via-stellar-cyan to-plasma-orange bg-clip-text text-transparent">
                   Asteroid Impact Simulator
                 </span>
               </h2>
@@ -71,9 +75,15 @@ const Index = () => {
 
         {/* Other Sections - Enhanced Spacing */}
         <div className="space-y-16 sm:space-y-20 lg:space-y-24">
-          <MitigationStrategies asteroidParams={asteroidParams} />
-          <GameMode />
-          <EducationalContent />
+          <section id="mitigation">
+            <MitigationStrategies asteroidParams={asteroidParams} />
+          </section>
+          <section id="gamified">
+            <GameMode />
+          </section>
+          <section id="education">
+            <EducationalContent />
+          </section>
         </div>
       </main>
       <Footer />

@@ -84,7 +84,7 @@ const Footer = () => {
               </div>
               <div>
                 <span className="text-2xl font-bold text-quantum-blue bg-clip-text text-transparent">
-                  Meteor Madness
+                  Impact Lab
                 </span>
                 <div className="text-xs text-muted-foreground font-medium">
                   by AstroVision
