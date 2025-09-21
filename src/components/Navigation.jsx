@@ -290,9 +290,12 @@ const Navigation = () => {
                         : 'text-foreground hover:text-quantum-blue hover:bg-card/50 border border-transparent hover:border-quantum-blue/20'
                     }`}
                   >
-                    <Icon className={`w-4 h-4 transition-all duration-300 ${
-                      isActive ? 'text-quantum-blue animate-pulse-glow' : 'group-hover:text-quantum-blue group-hover:animate-pulse-glow'
-                    }`} />
+                    <Icon 
+                    style={{
+                    filter: 'drop-shadow(0 0 8px rgba(34, 211, 238, 0.3))',
+                    transform: isActive ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0deg)',
+                  }}
+                    className={`w-4 h-4 transition-all duration-300`} />
                     <span className="hidden xl:inline">{item.name}</span>
                     
                     {isActive && (
@@ -325,9 +328,12 @@ const Navigation = () => {
                     }`}
                     title={item.name}
                   >
-                    <Icon className={`w-4 h-4 transition-all duration-300 ${
-                      isActive ? 'text-quantum-blue animate-pulse-glow' : 'group-hover:text-quantum-blue group-hover:animate-pulse-glow'
-                    }`} />
+                    <Icon 
+                    style={{
+                    filter: 'drop-shadow(0 0 8px rgba(34, 211, 238, 0.3))',
+                    transform: isActive ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0deg)',
+                  }}
+                    className={`w-4 h-4 transition-all duration-300`} />
                     
                     {isActive && (
                       <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-quantum-blue rounded-full shadow-command" />
@@ -409,9 +415,12 @@ const Navigation = () => {
                   <div className={`p-2 rounded-lg ${
                     isActive ? 'bg-quantum-blue/20 shadow-command' : 'bg-muted/50'
                   }`}>
-                    <Icon className={`w-4 h-4 ${
-                      isActive ? 'text-quantum-blue animate-pulse-glow' : ''
-                    }`} />
+                    <Icon 
+                    style={{
+                    filter: 'drop-shadow(0 0 8px rgba(34, 211, 238, 0.3))',
+                    transform: isActive ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0deg)',
+                  }}
+                    className={`w-4 h-4`} />
                   </div>
                   <div className="flex-1">
                     <div className="text-base">{item.name}</div>

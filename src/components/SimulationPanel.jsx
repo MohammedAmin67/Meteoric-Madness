@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,12 @@ import {
   Zap
 } from "lucide-react";
 import { simulateAsteroid } from "@/services/mockApi";
+// ❌ REMOVED: import MitigationStrategies from "./MitigationStrategies";
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+// Register GSAP plugins
+gsap.registerPlugin(ScrollTrigger);
 
 const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
   const [asteroidParams, setAsteroidParams] = useState({
@@ -33,6 +39,194 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
   const [results, setResults] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Animation refs
+  const containerRef = useRef(null);
+  const parametersPanelRef = useRef(null);
+  const resultsRef = useRef(null);
+  // ❌ REMOVED: const mitigationRef = useRef(null);
+
+  // ✅ ADDED: Store asteroid params in localStorage for MitigationStrategies to access
+  useEffect(() => {
+    localStorage.setItem('meteoric-asteroid-params', JSON.stringify(asteroidParams));
+  }, [asteroidParams]);
+
+  // Initialize animations
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+
+      // Parameters panel animation
+      if (parametersPanelRef.current) {
+        gsap.fromTo(parametersPanelRef.current, {
+          opacity: 0,
+          y: 30,
+          scale: 0.98
+        }, {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.8,
+          ease: "power2.out",
+          delay: 0.2
+        });
+
+        // Animate form fields
+        const formFields = parametersPanelRef.current.querySelectorAll('.form-field');
+        gsap.fromTo(formFields, {
+          opacity: 0,
+          x: -20
+        }, {
+          opacity: 1,
+          x: 0,
+          duration: 0.5,
+          stagger: 0.1,
+          ease: "power2.out",
+          delay: 0.5
+        });
+      }
+
+      // Add interactive effects
+      const addInteractiveEffects = () => {
+        // Button hover effects
+        const buttons = document.querySelectorAll('.interactive-button');
+        buttons.forEach((button) => {
+          if (button.dataset.hoverInitialized) return;
+          button.dataset.hoverInitialized = 'true';
+          
+          const handleMouseEnter = () => {
+            gsap.to(button, {
+              scale: 1.05,
+              duration: 0.2,
+              ease: "power2.out"
+            });
+          };
+
+          const handleMouseLeave = () => {
+            gsap.to(button, {
+              scale: 1,
+              duration: 0.2,
+              ease: "power2.out"
+            });
+          };
+
+          button.addEventListener('mouseenter', handleMouseEnter);
+          button.addEventListener('mouseleave', handleMouseLeave);
+        });
+
+        // Card hover effects
+        const cards = document.querySelectorAll('.simulation-card');
+        cards.forEach((card) => {
+          if (card.dataset.hoverInitialized) return;
+          card.dataset.hoverInitialized = 'true';
+          
+          const handleMouseEnter = () => {
+            gsap.to(card, {
+              scale: 1.02,
+              y: -4,
+              duration: 0.3,
+              ease: "power2.out"
+            });
+          };
+
+          const handleMouseLeave = () => {
+            gsap.to(card, {
+              scale: 1,
+              y: 0,
+              duration: 0.3,
+              ease: "power2.out"
+            });
+          };
+
+          card.addEventListener('mouseenter', handleMouseEnter);
+          card.addEventListener('mouseleave', handleMouseLeave);
+        });
+
+        // Input focus effects
+        const inputs = document.querySelectorAll('.simulation-input');
+        inputs.forEach((input) => {
+          if (input.dataset.focusInitialized) return;
+          input.dataset.focusInitialized = 'true';
+          
+          const handleFocus = () => {
+            gsap.to(input.parentElement, {
+              scale: 1.02,
+              duration: 0.2,
+              ease: "power2.out"
+            });
+          };
+
+          const handleBlur = () => {
+            gsap.to(input.parentElement, {
+              scale: 1,
+              duration: 0.2,
+              ease: "power2.out"
+            });
+          };
+
+          input.addEventListener('focus', handleFocus);
+          input.addEventListener('blur', handleBlur);
+        });
+      };
+
+      setTimeout(addInteractiveEffects, 600);
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
+  }, []);
+
+  // Animate results when they appear
+  useEffect(() => {
+    if (results && resultsRef.current) {
+      gsap.fromTo(resultsRef.current, {
+        opacity: 0,
+        y: 40,
+        scale: 0.95
+      }, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.8,
+        ease: "power2.out"
+      });
+
+      // Animate result cards
+      const resultCards = resultsRef.current.querySelectorAll('.result-card');
+      gsap.fromTo(resultCards, {
+        opacity: 0,
+        y: 30,
+        scale: 0.95
+      }, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: "back.out(1.4)",
+        delay: 0.3
+      });
+
+      // Animate metrics
+      const metrics = resultsRef.current.querySelectorAll('.metric-card');
+      gsap.fromTo(metrics, {
+        opacity: 0,
+        scale: 0.8
+      }, {
+        opacity: 1,
+        scale: 1,
+        duration: 0.5,
+        stagger: 0.05,
+        ease: "back.out(1.7)",
+        delay: 0.5
+      });
+    }
+  }, [results]);
+
+  // ❌ REMOVED: Animate mitigation section when results are available
 
   const handleSimulate = async () => {
     setIsLoading(true);
@@ -83,6 +277,16 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
       composition: "rock",
       angle: "45"
     });
+
+    // Animate reset
+    if (resultsRef.current) {
+      gsap.to(resultsRef.current, {
+        opacity: 0,
+        y: -20,
+        duration: 0.3,
+        ease: "power2.in"
+      });
+    }
   };
 
   const getThreatLevel = (magnitude) => {
@@ -132,9 +336,12 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
   };
 
   return (
-    <div className="w-full max-w-full">
+    <div 
+      ref={containerRef}
+      className={`w-full max-w-full space-y-4 sm:space-y-6 transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+    >
       {/* Parameters Panel */}
-      <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
+      <Card ref={parametersPanelRef} className="simulation-card bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
         <CardHeader className="pb-3 sm:pb-4">
           <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
             <div className="flex items-center space-x-3">
@@ -160,7 +367,7 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
         
         <CardContent className="space-y-4 sm:space-y-6">
           {/* Size Input */}
-          <div className="space-y-2">
+          <div className="form-field space-y-2">
             <Label htmlFor="size" className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
               <div className="flex items-center space-x-2">
                 <Target className="w-4 h-4 text-plasma-orange" />
@@ -177,7 +384,7 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
               max="10000"
               value={asteroidParams.size}
               onChange={(e) => setAsteroidParams(prev => ({ ...prev, size: e.target.value }))}
-              className="bg-background/50 border-border/50 focus:border-quantum-blue h-10 sm:h-11"
+              className="simulation-input bg-background/50 border-border/50 focus:border-quantum-blue h-10 sm:h-11"
               placeholder="Enter diameter"
             />
             <p className="text-xs text-muted-foreground">
@@ -186,7 +393,7 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
           </div>
 
           {/* Velocity Input */}
-          <div className="space-y-2">
+          <div className="form-field space-y-2">
             <Label htmlFor="velocity" className="flex items-center space-x-2">
               <TrendingUp className="w-4 h-4 text-stellar-cyan" />
               <span className="font-medium text-sm">Velocity (km/s)</span>
@@ -199,14 +406,14 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
               step="0.1"
               value={asteroidParams.velocity}
               onChange={(e) => setAsteroidParams(prev => ({ ...prev, velocity: e.target.value }))}
-              className="bg-background/50 border-border/50 focus:border-stellar-cyan h-10 sm:h-11"
+              className="simulation-input bg-background/50 border-border/50 focus:border-stellar-cyan h-10 sm:h-11"
               placeholder="Impact velocity"
             />
           </div>
 
           {/* Density and Angle Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
+            <div className="form-field space-y-2">
               <Label htmlFor="density" className="flex items-center space-x-2">
                 <Activity className="w-4 h-4 text-mission-green" />
                 <span className="font-medium text-sm">Density (g/cm³)</span>
@@ -219,12 +426,12 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
                 step="0.1"
                 value={asteroidParams.density}
                 onChange={(e) => setAsteroidParams(prev => ({ ...prev, density: e.target.value }))}
-                className="bg-background/50 border-border/50 focus:border-mission-green h-10 sm:h-11"
+                className="simulation-input bg-background/50 border-border/50 focus:border-mission-green h-10 sm:h-11"
                 placeholder="Density"
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="form-field space-y-2">
               <Label htmlFor="angle" className="flex items-center space-x-2">
                 <Activity className="w-4 h-4 text-plasma-orange" />
                 <span className="font-medium text-sm">Angle (°)</span>
@@ -236,14 +443,14 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
                 max="90"
                 value={asteroidParams.angle}
                 onChange={(e) => setAsteroidParams(prev => ({ ...prev, angle: e.target.value }))}
-                className="bg-background/50 border-border/50 focus:border-plasma-orange h-10 sm:h-11"
+                className="simulation-input bg-background/50 border-border/50 focus:border-plasma-orange h-10 sm:h-11"
                 placeholder="Entry angle"
               />
             </div>
           </div>
 
           {/* Composition Select */}
-          <div className="space-y-2">
+          <div className="form-field space-y-2">
             <Label htmlFor="composition" className="flex items-center space-x-2">
               <Zap className="w-4 h-4 text-stellar-cyan" />
               <span className="font-medium text-sm">Composition</span>
@@ -306,7 +513,7 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
             <Button 
               onClick={handleSimulate} 
               disabled={isLoading}
-              className="flex-1 bg-gradient-quantum hover:shadow-command h-10 sm:h-12"
+              className="interactive-button flex-1 bg-gradient-quantum hover:shadow-command h-10 sm:h-12"
             >
               {isLoading ? (
                 <>
@@ -326,7 +533,7 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
             <Button 
               onClick={handleReset} 
               variant="outline" 
-              className="border-border h-10 sm:h-12 px-4 sm:px-6"
+              className="interactive-button border-border h-10 sm:h-12 px-4 sm:px-6"
               disabled={isLoading}
             >
               <RotateCcw className="w-4 h-4 mr-2" />
@@ -349,9 +556,9 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
 
       {/* Results Section */}
       {results && (
-        <div className="mt-4 sm:mt-6 space-y-4 sm:space-y-6">
+        <div ref={resultsRef} className="space-y-4 sm:space-y-6">
           {/* Impact Summary */}
-          <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
+          <Card className="result-card simulation-card bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
             <CardHeader className="pb-3 sm:pb-4">
               <CardTitle className="flex items-center space-x-3">
                 <div className="p-2 rounded-lg bg-gradient-to-r from-plasma-orange to-destructive">
@@ -363,7 +570,7 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
             <CardContent className="space-y-4 sm:space-y-6">
               {/* Key Metrics */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="text-center p-4 bg-quantum-blue/10 rounded-lg border border-quantum-blue/20">
+                <div className="metric-card text-center p-4 bg-quantum-blue/10 rounded-lg border border-quantum-blue/20">
                   <div className="text-2xl sm:text-3xl font-bold text-quantum-blue mb-1">
                     {(results.kineticEnergy / 1e15).toFixed(1)}
                   </div>
@@ -371,7 +578,7 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
                   <div className="text-xs text-quantum-blue mt-1">Kinetic Energy</div>
                 </div>
                 
-                <div className="text-center p-4 bg-plasma-orange/10 rounded-lg border border-plasma-orange/20">
+                <div className="metric-card text-center p-4 bg-plasma-orange/10 rounded-lg border border-plasma-orange/20">
                   <div className="text-2xl sm:text-3xl font-bold text-plasma-orange mb-1">
                     {results.craterSize.toFixed(0)}
                   </div>
@@ -425,7 +632,7 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
           </Card>
 
           {/* Damage Assessment */}
-          <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
+          <Card className="result-card simulation-card bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
             <CardHeader className="pb-3 sm:pb-4">
               <CardTitle className="flex items-center space-x-3">
                 <div className="p-2 rounded-lg bg-gradient-to-r from-destructive to-plasma-orange">
@@ -437,7 +644,7 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Casualties */}
-                <div className="text-center p-4 bg-destructive/10 rounded-lg border border-destructive/20 min-h-[100px] flex flex-col justify-center">
+                <div className="metric-card text-center p-4 bg-destructive/10 rounded-lg border border-destructive/20 min-h-[100px] flex flex-col justify-center">
                   <div className="text-xl sm:text-2xl font-bold text-destructive">
                     {formatLargeNumber(results.damage.casualties)}
                   </div>
@@ -445,7 +652,7 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
                 </div>
                 
                 {/* Economic Loss */}
-                <div className="text-center p-4 bg-plasma-orange/10 rounded-lg border border-plasma-orange/20 min-h-[100px] flex flex-col justify-center">
+                <div className="metric-card text-center p-4 bg-plasma-orange/10 rounded-lg border border-plasma-orange/20 min-h-[100px] flex flex-col justify-center">
                   <div className="text-xl sm:text-2xl font-bold text-plasma-orange">
                     {formatCurrency(results.damage.economicLoss)}
                   </div>
@@ -453,7 +660,7 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
                 </div>
                 
                 {/* Affected Area */}
-                <div className="text-center p-4 bg-stellar-cyan/10 rounded-lg border border-stellar-cyan/20 sm:col-span-2 lg:col-span-1 min-h-[100px] flex flex-col justify-center">
+                <div className="metric-card text-center p-4 bg-stellar-cyan/10 rounded-lg border border-stellar-cyan/20 sm:col-span-2 lg:col-span-1 min-h-[100px] flex flex-col justify-center">
                   <div className="text-xl sm:text-2xl font-bold text-stellar-cyan">
                     {formatArea(results.damage.affectedArea)}
                   </div>
@@ -492,6 +699,8 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
           </Card>
         </div>
       )}
+
+      {/* ❌ REMOVED: MitigationStrategies component - it will get data from localStorage instead */}
     </div>
   );
 };

@@ -68,7 +68,7 @@ const SimulationPage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8 sm:mb-12">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-quantum-blue via-stellar-cyan to-plasma-orange bg-clip-text text-transparent">
+              <span className="text-quantum-blue">
                 Asteroid Impact Simulator
               </span>
             </h1>
@@ -123,7 +123,7 @@ const DefensePage = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8 sm:mb-12">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-mission-green via-stellar-cyan to-quantum-blue bg-clip-text text-transparent">
+              <span className="text-mission-green">
                 Planetary Defense Systems
               </span>
             </h1>
@@ -145,7 +145,7 @@ const MissionControlPage = () => (
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-plasma-orange via-stellar-cyan to-quantum-blue bg-clip-text text-transparent">
+            <span className="text-plasma-orange">
               Mission Control Center
             </span>
           </h1>
@@ -166,7 +166,7 @@ const EducationPage = () => (
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-stellar-cyan via-quantum-blue to-plasma-orange bg-clip-text text-transparent">
+            <span className="text-stellar-cyan">
               Asteroid Science Hub
             </span>
           </h1>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,10 +19,26 @@ import {
   Activity,
   Rocket,
 } from "lucide-react";
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+// Register GSAP plugins
+gsap.registerPlugin(ScrollTrigger);
 
 const EducationalContent = () => {
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [isLoaded, setIsLoaded] = useState(false);
+  // ✅ REMOVED: animatedTopics tracking that was causing the blank content issue
+
+  // Animation refs
+  const sectionRef = useRef(null);
+  const headerRef = useRef(null);
+  const tabsRef = useRef(null);
+  const overviewGridRef = useRef(null);
+  const topicNavRef = useRef(null);
+  const contentDisplayRef = useRef(null);
+  const featuresRef = useRef(null);
 
   const educationalSections = {
     science: {
@@ -483,6 +499,294 @@ Where:
     }
   };
 
+  // Initialize animations
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+
+      // Header animation
+      if (headerRef.current) {
+        gsap.fromTo(headerRef.current.children, {
+          opacity: 0,
+          y: 30
+        }, {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.2,
+          ease: "power2.out",
+          delay: 0.2
+        });
+      }
+
+      // Tabs animation
+      if (tabsRef.current) {
+        ScrollTrigger.create({
+          trigger: tabsRef.current,
+          start: "top 90%",
+          onEnter: () => {
+            gsap.fromTo(tabsRef.current.querySelector('.tabs-list'), {
+              opacity: 0,
+              scale: 0.95
+            }, {
+              opacity: 1,
+              scale: 1,
+              duration: 0.6,
+              ease: "back.out(1.4)"
+            });
+          },
+          once: true
+        });
+      }
+
+      // Add interactive effects
+      setTimeout(addInteractiveEffects, 600);
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
+  }, []);
+
+  // Interactive hover effects
+  const addInteractiveEffects = () => {
+    // Educational card hover effects
+    const educationCards = document.querySelectorAll('.education-card');
+    educationCards.forEach((card) => {
+      if (card.dataset.hoverInitialized) return;
+      card.dataset.hoverInitialized = 'true';
+      
+      const icon = card.querySelector('.education-icon');
+      const exploreButton = card.querySelector('.explore-button');
+      
+      const handleMouseEnter = () => {
+        gsap.to(card, {
+          scale: 1.02,
+          y: -8,
+          duration: 0.3,
+          ease: "power2.out"
+        });
+        if (icon) {
+          gsap.to(icon, {
+            scale: 1.1,
+            rotation: 5,
+            duration: 0.3,
+            ease: "back.out(1.7)"
+          });
+        }
+        if (exploreButton) {
+          gsap.to(exploreButton, {
+            scale: 1.05,
+            duration: 0.2,
+            ease: "power2.out"
+          });
+        }
+      };
+
+      const handleMouseLeave = () => {
+        gsap.to(card, {
+          scale: 1,
+          y: 0,
+          duration: 0.3,
+          ease: "power2.out"
+        });
+        if (icon) {
+          gsap.to(icon, {
+            scale: 1,
+            rotation: 0,
+            duration: 0.3,
+            ease: "power2.out"
+          });
+        }
+        if (exploreButton) {
+          gsap.to(exploreButton, {
+            scale: 1,
+            duration: 0.2,
+            ease: "power2.out"
+          });
+        }
+      };
+
+      card.addEventListener('mouseenter', handleMouseEnter);
+      card.addEventListener('mouseleave', handleMouseLeave);
+    });
+
+    // Topic button hover effects
+    const topicButtons = document.querySelectorAll('.topic-button');
+    topicButtons.forEach((button) => {
+      if (button.dataset.hoverInitialized) return;
+      button.dataset.hoverInitialized = 'true';
+      
+      const handleMouseEnter = () => {
+        if (!button.classList.contains('bg-gradient-quantum')) {
+          gsap.to(button, {
+            scale: 1.02,
+            x: 5,
+            duration: 0.2,
+            ease: "power2.out"
+          });
+        }
+      };
+
+      const handleMouseLeave = () => {
+        gsap.to(button, {
+          scale: 1,
+          x: 0,
+          duration: 0.2,
+          ease: "power2.out"
+        });
+      };
+
+      button.addEventListener('mouseenter', handleMouseEnter);
+      button.addEventListener('mouseleave', handleMouseLeave);
+    });
+
+    // Feature card hover effects
+    const featureCards = document.querySelectorAll('.feature-card');
+    featureCards.forEach((card) => {
+      if (card.dataset.hoverInitialized) return;
+      card.dataset.hoverInitialized = 'true';
+      
+      const handleMouseEnter = () => {
+        gsap.to(card, {
+          scale: 1.05,
+          duration: 0.2,
+          ease: "power2.out"
+        });
+      };
+
+      const handleMouseLeave = () => {
+        gsap.to(card, {
+          scale: 1,
+          duration: 0.2,
+          ease: "power2.out"
+        });
+      };
+
+      card.addEventListener('mouseenter', handleMouseEnter);
+      card.addEventListener('mouseleave', handleMouseLeave);
+    });
+  };
+
+  // Animate tab content when switching
+  useEffect(() => {
+    const animateTabContent = () => {
+      let contentRef = null;
+      
+      switch (activeTab) {
+        case "overview":
+          contentRef = overviewGridRef.current;
+          break;
+        case "science":
+        case "physics":
+        case "defense":
+          contentRef = topicNavRef.current;
+          break;
+        default:
+          return;
+      }
+
+      if (contentRef) {
+        gsap.fromTo(contentRef, {
+          opacity: 0,
+          y: 20
+        }, {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          ease: "power2.out"
+        });
+
+        // Animate child elements based on tab
+        if (activeTab === "overview") {
+          const educationCards = contentRef.querySelectorAll('.education-card');
+          gsap.fromTo(educationCards, {
+            opacity: 0,
+            y: 30,
+            scale: 0.95
+          }, {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.5,
+            stagger: 0.1,
+            ease: "power2.out",
+            delay: 0.2
+          });
+
+          // Animate features section
+          if (featuresRef.current) {
+            const featureCards = featuresRef.current.querySelectorAll('.feature-card');
+            gsap.fromTo(featureCards, {
+              opacity: 0,
+              y: 20,
+              scale: 0.95
+            }, {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              duration: 0.4,
+              stagger: 0.1,
+              ease: "power2.out",
+              delay: 0.5
+            });
+          }
+        } else {
+          const topicButtons = contentRef.querySelectorAll('.topic-button');
+          gsap.fromTo(topicButtons, {
+            opacity: 0,
+            x: -20
+          }, {
+            opacity: 1,
+            x: 0,
+            duration: 0.4,
+            stagger: 0.1,
+            ease: "power2.out",
+            delay: 0.2
+          });
+        }
+      }
+    };
+
+    if (isLoaded) {
+      animateTabContent();
+      setTimeout(addInteractiveEffects, 300);
+    }
+  }, [activeTab, isLoaded]);
+
+  // ✅ FIXED: Animate content display when topic changes - Always animate, no tracking
+  useEffect(() => {
+    if (selectedTopic && contentDisplayRef.current) {
+      // Always animate content when topic changes
+      gsap.fromTo(contentDisplayRef.current, {
+        opacity: 0,
+        y: 30,
+        scale: 0.98
+      }, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        ease: "power2.out"
+      });
+
+      // Animate content sections
+      const contentSections = contentDisplayRef.current.querySelectorAll('.content-section');
+      gsap.fromTo(contentSections, {
+        opacity: 0,
+        y: 20
+      }, {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        stagger: 0.1,
+        ease: "power2.out",
+        delay: 0.2
+      });
+    }
+  }, [selectedTopic]); // ✅ REMOVED: animatedTopics dependency
+
   const getLevelColor = (level) => {
     switch (level) {
       case 'Beginner': return 'bg-mission-green';
@@ -510,361 +814,360 @@ Where:
     }
   };
 
+  // ✅ SIMPLIFIED: Direct topic selection without fade-out animation
+  const handleTopicSelect = (topicId) => {
+    setSelectedTopic(topicId);
+  };
+
   return (
-    <section id="education" className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+    <section 
+      id="education" 
+      ref={sectionRef}
+      className={`px-4 sm:px-6 lg:px-8 transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+    >
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">
-            <span className="text-quantum-blue bg-clip-text text-transparent">
-              Asteroid Science Hub
-            </span>
-          </h2>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
-            Comprehensive education on asteroid science, impact physics, and planetary defense strategies
-          </p>
-        </div>
+        <div ref={tabsRef}>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+            <TabsList className="tabs-list grid w-full grid-cols-2 lg:grid-cols-4 bg-card/60 border-border/50 backdrop-blur-sm h-auto p-1">
+              <TabsTrigger 
+                value="overview" 
+                className="data-[state=active]:bg-gradient-quantum data-[state=active]:text-white text-xs sm:text-sm p-2 sm:p-3 h-10 sm:h-12"
+              >
+                <GraduationCap className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Overview</span>
+                <span className="sm:hidden">Start</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="science" 
+                className="data-[state=active]:bg-gradient-quantum data-[state=active]:text-white text-xs sm:text-sm p-2 sm:p-3 h-10 sm:h-12"
+              >
+                <Telescope className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Science</span>
+                <span className="sm:hidden">Sci</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="physics" 
+                className="data-[state=active]:bg-gradient-quantum data-[state=active]:text-white text-xs sm:text-sm p-2 sm:p-3 h-10 sm:h-12"
+              >
+                <Atom className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Physics</span>
+                <span className="sm:hidden">Phy</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="defense" 
+                className="data-[state=active]:bg-gradient-quantum data-[state=active]:text-white text-xs sm:text-sm p-2 sm:p-3 h-10 sm:h-12"
+              >
+                <Shield className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Defense</span>
+                <span className="sm:hidden">Def</span>
+              </TabsTrigger>
+            </TabsList>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-card/60 border-border/50 backdrop-blur-sm h-auto p-1">
-            <TabsTrigger 
-              value="overview" 
-              className="data-[state=active]:bg-gradient-quantum data-[state=active]:text-white text-xs sm:text-sm p-2 sm:p-3 h-10 sm:h-12"
-            >
-              <GraduationCap className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Overview</span>
-              <span className="sm:hidden">Start</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="science" 
-              className="data-[state=active]:bg-gradient-quantum data-[state=active]:text-white text-xs sm:text-sm p-2 sm:p-3 h-10 sm:h-12"
-            >
-              <Telescope className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Science</span>
-              <span className="sm:hidden">Sci</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="physics" 
-              className="data-[state=active]:bg-gradient-quantum data-[state=active]:text-white text-xs sm:text-sm p-2 sm:p-3 h-10 sm:h-12"
-            >
-              <Atom className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Physics</span>
-              <span className="sm:hidden">Phy</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="defense" 
-              className="data-[state=active]:bg-gradient-quantum data-[state=active]:text-white text-xs sm:text-sm p-2 sm:p-3 h-10 sm:h-12"
-            >
-              <Shield className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Defense</span>
-              <span className="sm:hidden">Def</span>
-            </TabsTrigger>
-          </TabsList>
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+              <div ref={overviewGridRef} className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                {Object.entries(educationalSections).map(([key, section]) => {
+                  const Icon = section.icon;
+                  return (
+                    <Card key={key} className="education-card bg-card/60 border-border/50 backdrop-blur-sm shadow-command hover:shadow-glow transition-all duration-300 group">
+                      <CardHeader className="pb-3 sm:pb-4">
+                        <CardTitle className="flex items-center space-x-3">
+                          <div className={`education-icon p-3 rounded-lg bg-gradient-to-br ${section.gradient}`}>
+                            <Icon className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
+                            <span className="text-lg font-bold text-quantum-blue">{section.title}</span>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {section.topics.length} comprehensive topics
+                            </p>
+                          </div>
+                        </CardTitle>
+                      </CardHeader>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-4 sm:space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-              {Object.entries(educationalSections).map(([key, section]) => {
-                const Icon = section.icon;
-                return (
-                  <Card key={key} className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command hover:shadow-glow transition-all duration-300 group">
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          {section.topics.slice(0, 3).map((topic) => (
+                            <div key={topic.id} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg border border-border/30">
+                              <div className="flex items-center space-x-3">
+                                <BookOpen className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium">{topic.title}</div>
+                                  <div className="text-xs text-muted-foreground">{topic.estimatedTime}</div>
+                                </div>
+                              </div>
+                              <Badge className={`${getLevelColor(topic.level)} text-white text-xs px-2 py-1`}>
+                                {getLevelIcon(topic.level)}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+
+                        <Separator className="my-4" />
+
+                        <Button 
+                          className="explore-button w-full text-quantum-white bg-gradient-quantum hover:shadow-command transition-all duration-300 h-10 sm:h-12 group-hover:scale-105"
+                          onClick={() => handleExploreSection(key)}
+                        >
+                          <span className="hidden sm:inline">Explore {section.title}</span>
+                          <span className="sm:hidden">Explore</span>
+                          <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {/* Educational Features */}
+              <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="flex items-center space-x-3">
+                    <div className="p-2 rounded-lg bg-gradient-quantum">
+                      <Lightbulb className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="text-lg text-quantum-blue">Learning Features</span>
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent ref={featuresRef}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    <div className="feature-card p-4 bg-stellar-cyan/10 rounded-lg border border-stellar-cyan/20">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <Target className="w-5 h-5 text-stellar-cyan" />
+                        <h4 className="font-bold text-stellar-cyan">Interactive Content</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Engage with comprehensive materials covering asteroid detection, 
+                        orbital mechanics, and impact physics with real-world examples.
+                      </p>
+                    </div>
+
+                    <div className="feature-card p-4 bg-plasma-orange/10 rounded-lg border border-plasma-orange/20">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <Activity className="w-5 h-5 text-plasma-orange" />
+                        <h4 className="font-bold text-plasma-orange">Progressive Learning</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Topics are organized by difficulty level from beginner to advanced, 
+                        allowing you to build knowledge systematically.
+                      </p>
+                    </div>
+
+                    <div className="feature-card p-4 bg-mission-green/10 rounded-lg border border-mission-green/20">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <Rocket className="w-5 h-5 text-mission-green" />
+                        <h4 className="font-bold text-mission-green">Practical Applications</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Learn how scientific principles apply to real planetary defense 
+                        missions and current space agency initiatives.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Facts */}
+              <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="flex items-center space-x-3">
+                    <div className="p-2 rounded-lg bg-gradient-quantum">
+                      <Info className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="text-lg text-quantum-blue">Did You Know?</span>
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    <div className="text-center p-4 bg-stellar-cyan/10 rounded-lg border border-stellar-cyan/20">
+                      <div className="text-2xl font-bold text-stellar-cyan mb-2">31,000+</div>
+                      <div className="text-sm text-muted-foreground mb-2">Near-Earth Asteroids Discovered</div>
+                      <div className="text-xs text-muted-foreground">
+                        <span>NASA automated systems discover about 3,000 new objects annually</span>
+                      </div>
+                    </div>
+
+                    <div className="text-center p-4 bg-plasma-orange/10 rounded-lg border border-plasma-orange/20">
+                      <div className="text-2xl font-bold text-plasma-orange mb-2">66 MYA</div>
+                      <div className="text-sm text-muted-foreground mb-2">Chicxulub Impact Event</div>
+                      <div className="text-xs text-muted-foreground">
+                        Created 180km crater, ending the age of dinosaurs and reshaping evolution
+                      </div>
+                    </div>
+
+                    <div className="text-center p-4 bg-mission-green/10 rounded-lg border border-mission-green/20">
+                      <div className="text-2xl font-bold text-mission-green mb-2">2026</div>
+                      <div className="text-sm text-muted-foreground mb-2">Hera Mission Arrival</div>
+                      <div className="text-xs text-muted-foreground">
+                        ESA follow-up mission to study the DART impact site and validate deflection models
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Individual Section Tabs */}
+            {Object.entries(educationalSections).map(([key, section]) => (
+              <TabsContent key={key} value={key} className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6">
+                  {/* Topic Navigation - Responsive */}
+                  <Card ref={topicNavRef} className="xl:col-span-1 bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
                     <CardHeader className="pb-3 sm:pb-4">
                       <CardTitle className="flex items-center space-x-3">
-                        <div className={`p-3 rounded-lg bg-gradient-to-br ${section.gradient}`}>
-                          <Icon className="w-6 h-6 text-white" />
+                        <div className={`p-2 rounded-lg bg-gradient-to-br ${section.gradient}`}>
+                          <section.icon className="w-5 h-5 text-white" />
                         </div>
-                        <div>
-                          <span className="text-lg font-bold text-quantum-blue">{section.title}</span>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {section.topics.length} comprehensive topics
-                          </p>
-                        </div>
+                        <span className="text-lg text-quantum-blue">{section.title}</span>
                       </CardTitle>
                     </CardHeader>
 
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        {section.topics.slice(0, 3).map((topic) => (
-                          <div key={topic.id} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg border border-border/30">
-                            <div className="flex items-center space-x-3">
-                              <BookOpen className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                              <div className="flex-1">
-                                <div className="text-sm font-medium">{topic.title}</div>
-                                <div className="text-xs text-muted-foreground">{topic.estimatedTime}</div>
+                    <CardContent className="space-y-2">
+                      {section.topics.map((topic) => (
+                        <Button
+                          key={topic.id}
+                          variant={selectedTopic === topic.id ? "default" : "ghost"}
+                          className={`topic-button w-full justify-start h-auto p-3 text-left transition-all duration-300 ${
+                            selectedTopic === topic.id ? 'bg-gradient-quantum shadow-command' : 'hover:bg-muted/20'
+                          }`}
+                          onClick={() => handleTopicSelect(topic.id)}
+                        >
+                          <div className="flex-1">
+                            <div className="text-white font-medium text-sm mb-2">{topic.title}</div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge className={`${getLevelColor(topic.level)} text-white text-xs px-2 py-1`}>
+                                {getLevelIcon(topic.level)} {topic.level}
+                              </Badge>
+                              <div className="text-xs text-muted-foreground flex items-center space-x-1">
+                                <BookOpen className="w-3 h-3" />
+                                <span>{topic.estimatedTime}</span>
                               </div>
                             </div>
-                            <Badge className={`${getLevelColor(topic.level)} text-white text-xs px-2 py-1`}>
-                              {getLevelIcon(topic.level)}
-                            </Badge>
                           </div>
-                        ))}
-                      </div>
-
-                      <Separator className="my-4" />
-
-                      <Button 
-                        className="w-full text-quantum-white bg-gradient-quantum hover:shadow-command transition-all duration-300 h-10 sm:h-12 group-hover:scale-105"
-                        onClick={() => handleExploreSection(key)}
-                      >
-                        <span className="hidden sm:inline">Explore {section.title}</span>
-                        <span className="sm:hidden">Explore</span>
-                        <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                      </Button>
+                        </Button>
+                      ))}
                     </CardContent>
                   </Card>
-                );
-              })}
-            </div>
 
-            {/* Educational Features */}
-            <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
-              <CardHeader className="pb-3 sm:pb-4">
-                <CardTitle className="flex items-center space-x-3">
-                  <div className="p-2 rounded-lg bg-gradient-quantum">
-                    <Lightbulb className="w-5 h-5 text-white" />
-                  </div>
-                  <span className="text-lg text-quantum-blue">Learning Features</span>
-                </CardTitle>
-              </CardHeader>
+                  {/* Content Display - Responsive */}
+                  <div className="xl:col-span-3">
+                    {selectedTopic ? (
+                      (() => {
+                        const topic = section.topics.find(t => t.id === selectedTopic);
+                        if (!topic) return null;
 
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  <div className="p-4 bg-stellar-cyan/10 rounded-lg border border-stellar-cyan/20">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <Target className="w-5 h-5 text-stellar-cyan" />
-                      <h4 className="font-bold text-stellar-cyan">Interactive Content</h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Engage with comprehensive materials covering asteroid detection, 
-                      orbital mechanics, and impact physics with real-world examples.
-                    </p>
-                  </div>
+                        return (
+                          <Card ref={contentDisplayRef} className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
+                            <CardHeader className="pb-3 sm:pb-4">
+                              <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                                <span className="text-xl text-quantum-blue">{topic.title}</span>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Badge className={`${getLevelColor(topic.level)} text-white px-3 py-1`}>
+                                    {getLevelIcon(topic.level)} {topic.level}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs border-quantum-blue/30 text-quantum-blue">
+                                    <BookOpen className="w-3 h-3 mr-1" />
+                                    {topic.estimatedTime}
+                                  </Badge>
+                                </div>
+                              </CardTitle>
+                            </CardHeader>
 
-                  <div className="p-4 bg-plasma-orange/10 rounded-lg border border-plasma-orange/20">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <Activity className="w-5 h-5 text-plasma-orange" />
-                      <h4 className="font-bold text-plasma-orange">Progressive Learning</h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Topics are organized by difficulty level from beginner to advanced, 
-                      allowing you to build knowledge systematically.
-                    </p>
-                  </div>
-
-                  <div className="p-4 bg-mission-green/10 rounded-lg border border-mission-green/20">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <Rocket className="w-5 h-5 text-mission-green" />
-                      <h4 className="font-bold text-mission-green">Practical Applications</h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Learn how scientific principles apply to real planetary defense 
-                      missions and current space agency initiatives.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Facts */}
-            <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
-              <CardHeader className="pb-3 sm:pb-4">
-                <CardTitle className="flex items-center space-x-3">
-                  <div className="p-2 rounded-lg bg-gradient-quantum">
-                    <Info className="w-5 h-5 text-white" />
-                  </div>
-                  <span className="text-lg text-quantum-blue">Did You Know?</span>
-                </CardTitle>
-              </CardHeader>
-
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  <div className="text-center p-4 bg-stellar-cyan/10 rounded-lg border border-stellar-cyan/20">
-                    <div className="text-2xl font-bold text-stellar-cyan mb-2">31,000+</div>
-                    <div className="text-sm text-muted-foreground mb-2">Near-Earth Asteroids Discovered</div>
-                    <div className="text-xs text-muted-foreground">
-                      <span>NASA had automated systems discovered about 3,000 new objects annually</span>
-                    </div>
-                  </div>
-
-                  <div className="text-center p-4 bg-plasma-orange/10 rounded-lg border border-plasma-orange/20">
-                    <div className="text-2xl font-bold text-plasma-orange mb-2">66 MYA</div>
-                    <div className="text-sm text-muted-foreground mb-2">Chicxulub Impact Event</div>
-                    <div className="text-xs text-muted-foreground">
-                      Created 180km crater, ending the age of dinosaurs and reshaping evolution
-                    </div>
-                  </div>
-
-                  <div className="text-center p-4 bg-mission-green/10 rounded-lg border border-mission-green/20">
-                    <div className="text-2xl font-bold text-mission-green mb-2">2026</div>
-                    <div className="text-sm text-muted-foreground mb-2">Hera Mission Arrival</div>
-                    <div className="text-xs text-muted-foreground">
-                      ESA had a follow-up mission to study the DART impact site and validate deflection models
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Individual Section Tabs */}
-          {Object.entries(educationalSections).map(([key, section]) => (
-            <TabsContent key={key} value={key} className="space-y-4 sm:space-y-6">
-              <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6">
-                {/* Topic Navigation - Responsive */}
-                <Card className="xl:col-span-1 bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
-                  <CardHeader className="pb-3 sm:pb-4">
-                    <CardTitle className="flex items-center space-x-3">
-                      <div className={`p-2 rounded-lg bg-gradient-to-br ${section.gradient}`}>
-                        <section.icon className="w-5 h-5 text-white" />
-                      </div>
-                      <span className="text-lg text-quantum-blue">{section.title}</span>
-                    </CardTitle>
-                  </CardHeader>
-
-                  <CardContent className="space-y-2">
-                    {section.topics.map((topic) => (
-                      <Button
-                        key={topic.id}
-                        variant={selectedTopic === topic.id ? "default" : "ghost"}
-                        className={`w-full justify-start h-auto p-3 text-left transition-all duration-300 ${
-                          selectedTopic === topic.id ? 'bg-gradient-quantum shadow-command' : 'hover:bg-muted/20'
-                        }`}
-                        onClick={() => setSelectedTopic(topic.id)}
-                      >
-                        <div className="flex-1">
-                          <div className="text-white font-medium text-sm mb-2">{topic.title}</div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <Badge className={`${getLevelColor(topic.level)} text-white text-xs px-2 py-1`}>
-                              {getLevelIcon(topic.level)} {topic.level}
-                            </Badge>
-                            <div className="text-xs text-muted-foreground flex items-center space-x-1">
-                              <BookOpen className="w-3 h-3" />
-                              <span>{topic.estimatedTime}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </Button>
-                    ))}
-                  </CardContent>
-                </Card>
-
-                {/* Content Display - Responsive */}
-                <div className="xl:col-span-3">
-                  {selectedTopic ? (
-                    (() => {
-                      const topic = section.topics.find(t => t.id === selectedTopic);
-                      if (!topic) return null;
-
-                      return (
-                        <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
-                          <CardHeader className="pb-3 sm:pb-4">
-                            <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-                              <span className="text-xl text-quantum-blue">{topic.title}</span>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <Badge className={`${getLevelColor(topic.level)} text-white px-3 py-1`}>
-                                  {getLevelIcon(topic.level)} {topic.level}
-                                </Badge>
-                                <Badge variant="outline" className="text-xs border-quantum-blue/30 text-quantum-blue">
-                                  <BookOpen className="w-3 h-3 mr-1" />
-                                  {topic.estimatedTime}
-                                </Badge>
+                            <CardContent className="space-y-4 sm:space-y-6">
+                              {/* Main Content */}
+                              <div className="content-section prose prose-invert max-w-none">
+                                <div className="text-foreground whitespace-pre-line leading-relaxed text-sm sm:text-base">
+                                  {topic.content}
+                                </div>
                               </div>
-                            </CardTitle>
-                          </CardHeader>
 
-                          <CardContent className="space-y-4 sm:space-y-6">
-                            {/* Main Content */}
-                            <div className="prose prose-invert max-w-none">
-                              <div className="text-foreground whitespace-pre-line leading-relaxed text-sm sm:text-base">
-                                {topic.content}
-                              </div>
-                            </div>
-
-                            {/* Key Facts */}
-                            <div className={`p-4 rounded-lg border ${section.bgColor} ${section.borderColor}`}>
-                              <h4 className={`font-bold mb-3 flex items-center ${section.color}`}>
-                                <Info className="w-5 h-5 mr-2" />
-                                Key Facts
-                              </h4>
-                              <div className="space-y-2">
-                                {topic.keyFacts.map((fact, factIndex) => (
-                                  <div key={factIndex} className="flex items-start space-x-3 text-sm">
-                                    <span className={`mt-0.5 flex-shrink-0 ${section.color}`}>•</span>
-                                    <span className="text-muted-foreground">{fact}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Applications */}
-                            {topic.applications && (
-                              <div className="p-4 bg-quantum-blue/10 rounded-lg border border-quantum-blue/20">
-                                <h4 className="font-bold mb-3 flex items-center text-quantum-blue">
-                                  <PlayCircle className="w-5 h-5 mr-2" />
-                                  Real-World Applications
+                              {/* Key Facts */}
+                              <div className={`content-section p-4 rounded-lg border ${section.bgColor} ${section.borderColor}`}>
+                                <h4 className={`font-bold mb-3 flex items-center ${section.color}`}>
+                                  <Info className="w-5 h-5 mr-2" />
+                                  Key Facts
                                 </h4>
                                 <div className="space-y-2">
-                                  {topic.applications.map((application, appIndex) => (
-                                    <div key={appIndex} className="flex items-start space-x-3 text-sm">
-                                      <span className="text-quantum-blue mt-0.5 flex-shrink-0">→</span>
-                                      <span className="text-muted-foreground">{application}</span>
+                                  {topic.keyFacts.map((fact, factIndex) => (
+                                    <div key={factIndex} className="flex items-start space-x-3 text-sm">
+                                      <span className={`mt-0.5 flex-shrink-0 ${section.color}`}>•</span>
+                                      <span className="text-muted-foreground">{fact}</span>
                                     </div>
                                   ))}
                                 </div>
                               </div>
-                            )}
 
-                            <Separator className="my-4" />
+                              {/* Applications */}
+                              {topic.applications && (
+                                <div className="content-section p-4 bg-quantum-blue/10 rounded-lg border border-quantum-blue/20">
+                                  <h4 className="font-bold mb-3 flex items-center text-quantum-blue">
+                                    <PlayCircle className="w-5 h-5 mr-2" />
+                                    Real-World Applications
+                                  </h4>
+                                  <div className="space-y-2">
+                                    {topic.applications.map((application, appIndex) => (
+                                      <div key={appIndex} className="flex items-start space-x-3 text-sm">
+                                        <span className="text-quantum-blue mt-0.5 flex-shrink-0">→</span>
+                                        <span className="text-muted-foreground">{application}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
 
-                            {/* Additional Resources */}
-                            <div className="space-y-3">
-                              <h4 className="font-bold text-quantum-blue">Learn More</h4>
-                              <div className="flex flex-wrap gap-3">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="border-plasma-orange text-plasma-orange hover:bg-plasma-orange hover:text-white transition-all duration-300"
-                                  onClick={() => {
-                                    const simulationSection = document.getElementById('simulation');
-                                    if (simulationSection) {
-                                      simulationSection.scrollIntoView({ behavior: 'smooth' });
-                                    }
-                                  }}
-                                >
-                                  <Calculator className="w-4 h-4 mr-2" />
-                                  Try Simulation
-                                </Button>
-                        
+                              <Separator className="my-4" />
+
+                              {/* Additional Resources */}
+                              <div className="content-section space-y-3">
+                                <h4 className="font-bold text-quantum-blue">Learn More</h4>
+                                <div className="flex flex-wrap gap-3">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="border-plasma-orange text-plasma-orange hover:bg-plasma-orange hover:text-white transition-all duration-300"
+                                    onClick={() => {
+                                      const simulationSection = document.getElementById('simulation');
+                                      if (simulationSection) {
+                                        simulationSection.scrollIntoView({ behavior: 'smooth' });
+                                      }
+                                    }}
+                                  >
+                                    <Calculator className="w-4 h-4 mr-2" />
+                                    Try Simulation
+                                  </Button>
+                                </div>
                               </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })()
-                  ) : (
-                    <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
-                      <CardContent className="p-8 sm:p-12 text-center">
-                        <div className={`p-4 rounded-full bg-gradient-to-br ${section.gradient} w-fit mx-auto mb-6`}>
-                          <section.icon className="w-12 h-12 sm:w-16 sm:h-16 text-white animate-pulse" />
-                        </div>
-                        <h3 className="text-xl font-bold text-quantum-blue mb-2">{section.title}</h3>
-                        <p className="text-muted-foreground mb-6">
-                          Select a topic from the navigation to dive deep into {section.title.toLowerCase()}
-                        </p>
-                        <Button 
-                          onClick={() => setSelectedTopic(section.topics[0].id)}
-                          className="bg-gradient-quantum hover:shadow-command"
-                        >
-                          <BookOpen className="w-4 h-4 mr-2" />
-                          Start Learning
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  )}
+                            </CardContent>
+                          </Card>
+                        );
+                      })()
+                    ) : (
+                      <Card className="bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
+                        <CardContent className="p-8 sm:p-12 text-center">
+                          <div className={`p-4 rounded-full bg-gradient-to-br ${section.gradient} w-fit mx-auto mb-6`}>
+                            <section.icon className="w-12 h-12 sm:w-16 sm:h-16 text-white animate-pulse" />
+                          </div>
+                          <h3 className="text-xl font-bold text-quantum-blue mb-2">{section.title}</h3>
+                          <p className="text-muted-foreground mb-6">
+                            Select a topic from the navigation to dive deep into {section.title.toLowerCase()}
+                          </p>
+                          <Button 
+                            onClick={() => setSelectedTopic(section.topics[0].id)}
+                            className="bg-gradient-quantum hover:shadow-command"
+                          >
+                            <BookOpen className="w-4 h-4 mr-2" />
+                            Start Learning
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
       </div>
     </section>
   );
