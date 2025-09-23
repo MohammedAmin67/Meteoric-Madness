@@ -54,13 +54,6 @@ const SimulationPage = () => {
 
   // Example: Direct use of setAsteroidParams to show it's not just for passing to children
   // This can be removed in production, it's just to avoid lint errors and help debugging
-  const handleSetDefaultAsteroid = () => {
-    setAsteroidParams({
-      size: 50,
-      velocity: 25,
-      composition: "rocky"
-    });
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -77,17 +70,6 @@ const SimulationPage = () => {
             </p>
           </div>
 
-          <div className="mb-6">
-            <button
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
-              onClick={handleSetDefaultAsteroid}
-            >
-              Set Example Asteroid Params (Demo)
-            </button>
-            <p className="mt-2 text-xs text-gray-500">
-              Current asteroidParams: {asteroidParams ? JSON.stringify(asteroidParams) : "none"}
-            </p>
-          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
             <div className="lg:col-span-4 xl:col-span-4">

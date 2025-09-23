@@ -13,7 +13,9 @@ import {
   Telescope,
   Rocket,
   Database,
-  Monitor
+  Monitor,
+  Star,
+  Globe
 } from "lucide-react";
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -60,6 +62,24 @@ const Footer = () => {
     { name: "GSAP", icon: Activity },
     { name: "WebGL", icon: Monitor },
     { name: "APIs", icon: Database }
+  ];
+
+  const projectHighlights = [
+    {
+      icon: Star,
+      title: "Educational Focus",
+      description: "Interactive learning platform for asteroid science"
+    },
+    {
+      icon: Globe,
+      title: "Real Data",
+      description: "Powered by NASA and ESA mission data"
+    },
+    {
+      icon: Shield,
+      title: "Defense Ready",
+      description: "Comprehensive planetary protection strategies"
+    }
   ];
 
   // Initialize animations
@@ -189,6 +209,32 @@ const Footer = () => {
       button.addEventListener('mouseenter', handleMouseEnter);
       button.addEventListener('mouseleave', handleMouseLeave);
     });
+
+    // Highlight card hover effects
+    const highlightCards = document.querySelectorAll('.highlight-card');
+    highlightCards.forEach((card) => {
+      if (card.dataset.hoverInitialized) return;
+      card.dataset.hoverInitialized = 'true';
+      
+      const handleMouseEnter = () => {
+        gsap.to(card, {
+          scale: 1.05,
+          duration: 0.2,
+          ease: "power2.out"
+        });
+      };
+
+      const handleMouseLeave = () => {
+        gsap.to(card, {
+          scale: 1,
+          duration: 0.2,
+          ease: "power2.out"
+        });
+      };
+
+      card.addEventListener('mouseenter', handleMouseEnter);
+      card.addEventListener('mouseleave', handleMouseLeave);
+    });
   };
 
   return (
@@ -207,27 +253,43 @@ const Footer = () => {
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-8">
           
-          {/* Brand & Project Info Section */}
+          {/* Brand & Enhanced Info Section */}
           <div className="footer-section space-y-6">
+            {/* Brand Header */}
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-12 h-12 bg-gradient-quantum rounded-xl flex items-center justify-center shadow-command">
                 <Satellite className="w-7 h-7 text-white" />
               </div>
               <div>
                 <span className="text-2xl font-bold text-quantum-blue">
-                  AstroGuard
+                  Impact Lab
                 </span>
                 <div className="text-sm text-muted-foreground font-medium">
-                  Impact Lab
+                  Created by AstroVision
                 </div>
               </div>
             </div>
-            
-            <p className="text-muted-foreground leading-relaxed">
-              Advanced asteroid impact simulation platform combining scientific accuracy with 
-              interactive education. Experience realistic planetary defense scenarios through 
-              cutting-edge web technologies and real space agency data.
-            </p>
+
+            {/* Project Highlights */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold text-quantum-blue uppercase tracking-wider">Project Highlights</h4>
+              <div className="grid grid-cols-1 gap-3">
+                {projectHighlights.map((highlight, index) => (
+                  <div 
+                    key={index}
+                    className="highlight-card flex items-center space-x-3 p-3 bg-muted/10 hover:bg-muted/20 rounded-lg border border-border/30 transition-all duration-300"
+                  >
+                    <div className="p-2 bg-quantum-blue/10 rounded-lg">
+                      <highlight.icon className="w-4 h-4 text-quantum-blue" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-foreground">{highlight.title}</div>
+                      <div className="text-xs text-muted-foreground">{highlight.description}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
             {/* Technologies Used */}
             <div className="space-y-3">
@@ -340,13 +402,13 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Mission Statement */}
+          {/* Compact Mission Statement */}
           <div className="text-center mt-6 pt-4 border-t border-border/30">
-            <p className="text-sm font-medium text-quantum-blue mb-2">
+            <p className="text-sm font-medium text-quantum-blue mb-1">
               Advancing Planetary Defense Through Interactive Education
             </p>
-            <p className="text-xs text-muted-foreground max-w-2xl mx-auto">
-              Empowering the next generation with hands-on asteroid detection and defense experience.
+            <p className="text-xs text-muted-foreground">
+              An educational platform for asteroid impact simulation and defense strategy analysis.
             </p>
           </div>
         </div>
