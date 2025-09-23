@@ -19,6 +19,14 @@ import {
   Database,
   Cpu,
   Radar,
+  Eye,
+  Telescope,
+  BarChart3,
+  Settings,
+  Calculator,
+  Brain,
+  Gamepad2,
+  GraduationCap
 } from "lucide-react";
 import heroImage from "@/assets/hero-space.jpg";
 import gsap from 'gsap';
@@ -29,6 +37,12 @@ gsap.registerPlugin(ScrollTrigger);
 
 const HomePage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [currentDataIndex, setCurrentDataIndex] = useState({
+    simulation: 0,
+    threat: 0,
+    defense: 0,
+    system: 0
+  });
 
   // Animation refs
   const heroRef = useRef(null);
@@ -43,7 +57,181 @@ const HomePage = () => {
   const dashboardCardsRef = useRef(null);
   const finalCtaRef = useRef(null);
 
-  
+  // Live feature sets for each card - focusing on website capabilities
+  const liveFeatures = {
+    simulation: [
+      { 
+        title: "Launch Simulation", 
+        description: "Advanced impact modeling", 
+        icon: Play, 
+        feature: "Physics Engine",
+        capability: "Real-time calculations",
+        status: "Ready"
+      },
+      { 
+        title: "3D Visualization", 
+        description: "Orbital mechanics display", 
+        icon: Eye, 
+        feature: "Interactive View",
+        capability: "Dynamic rendering",
+        status: "Active"
+      },
+      { 
+        title: "Impact Analysis", 
+        description: "Damage assessment tools", 
+        icon: BarChart3, 
+        feature: "Data Modeling",
+        capability: "Predictive analysis",
+        status: "Available"
+      },
+      { 
+        title: "Parameter Control", 
+        description: "Asteroid customization", 
+        icon: Settings, 
+        feature: "User Interface",
+        capability: "Full configuration",
+        status: "Interactive"
+      }
+    ],
+    threat: [
+      { 
+        title: "Threat Assessment", 
+        description: "Risk evaluation system", 
+        icon: AlertTriangle, 
+        feature: "Detection Grid",
+        capability: "Continuous scanning",
+        status: "Monitoring"
+      },
+      { 
+        title: "NEO Database", 
+        description: "Astronomical catalog", 
+        icon: Telescope, 
+        feature: "Object Tracking",
+        capability: "Comprehensive data",
+        status: "Updated"
+      },
+      { 
+        title: "Risk Calculator", 
+        description: "Probability analysis", 
+        icon: Calculator, 
+        feature: "Assessment Tools",
+        capability: "Mathematical modeling",
+        status: "Operational"
+      },
+      { 
+        title: "Early Warning", 
+        description: "Detection algorithms", 
+        icon: Radar, 
+        feature: "Alert System",
+        capability: "Real-time monitoring",
+        status: "Scanning"
+      }
+    ],
+    defense: [
+      { 
+        title: "Defense Planning", 
+        description: "Mitigation strategies", 
+        icon: Shield, 
+        feature: "Strategy Library",
+        capability: "Multiple approaches",
+        status: "Ready"
+      },
+      { 
+        title: "Mission Design", 
+        description: "Deflection planning", 
+        icon: Target, 
+        feature: "Tactical Planning",
+        capability: "Mission optimization",
+        status: "Available"
+      },
+      { 
+        title: "Technology Review", 
+        description: "Defense systems analysis", 
+        icon: Zap, 
+        feature: "Tech Evaluation",
+        capability: "Comprehensive testing",
+        status: "Active"
+      },
+      { 
+        title: "Global Coordination", 
+        description: "International cooperation", 
+        icon: Globe, 
+        feature: "Network Interface",
+        capability: "Multi-agency support",
+        status: "Connected"
+      }
+    ],
+    system: [
+      { 
+        title: "System Status", 
+        description: "Platform monitoring", 
+        icon: Activity, 
+        feature: "Health Check",
+        capability: "System diagnostics",
+        status: "Optimal"
+      },
+      { 
+        title: "Game Mode", 
+        description: "Interactive scenarios", 
+        icon: Gamepad2, 
+        feature: "Mission Control",
+        capability: "Gamified learning",
+        status: "Available"
+      },
+      { 
+        title: "Education Hub", 
+        description: "Learning platform", 
+        icon: GraduationCap, 
+        feature: "Knowledge Base",
+        capability: "Interactive lessons",
+        status: "Accessible"
+      },
+      { 
+        title: "AI Assistant", 
+        description: "Intelligent guidance", 
+        icon: Brain, 
+        feature: "Smart Help",
+        capability: "Context-aware support",
+        status: "Online"
+      }
+    ]
+  };
+
+  // Cycle through features every 4 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentDataIndex(prev => ({
+        simulation: (prev.simulation + 1) % liveFeatures.simulation.length,
+        threat: (prev.threat + 1) % liveFeatures.threat.length,
+        defense: (prev.defense + 1) % liveFeatures.defense.length,
+        system: (prev.system + 1) % liveFeatures.system.length
+      }));
+    }, 4000);
+
+    return () => clearInterval(interval);
+  });
+
+  // Animate card content changes
+  useEffect(() => {
+    const cards = document.querySelectorAll('.live-card-content');
+    cards.forEach(card => {
+      gsap.fromTo(card, {
+        opacity: 0.8,
+        scale: 0.98
+      }, {
+        opacity: 1,
+        scale: 1,
+        duration: 0.5,
+        ease: "power2.out"
+      });
+    });
+  }, [currentDataIndex]);
+
+  // Get current feature for each card
+  const getCurrentFeature = (type) => {
+    return liveFeatures[type][currentDataIndex[type]];
+  };
+
   // Initialize animations
   useEffect(() => {
     // Set initial load state
@@ -118,9 +306,6 @@ const HomePage = () => {
         });
       }
 
-      // DISABLE all other scroll animations to prevent redundant effects
-      // The sections will just appear normally without animation
-
       // Add hover effects only
       const addCardHoverEffects = () => {
         const cards = document.querySelectorAll('.hover-card');
@@ -171,7 +356,7 @@ const HomePage = () => {
 
       setTimeout(addCardHoverEffects, 500);
 
-    }, 100); // Short delay to ensure DOM is ready
+    }, 100);
 
     // Cleanup
     return () => {
@@ -190,7 +375,7 @@ const HomePage = () => {
       bgColor: "bg-quantum-blue/10",
       borderColor: "border-quantum-blue/20",
       features: ["Real-time physics engine", "3D orbital visualization", "Impact damage analysis"],
-      stats: "10,000+ simulations run"
+      stats: "Professional-grade modeling"
     },
     {
       title: "Defense Strategies",
@@ -201,7 +386,7 @@ const HomePage = () => {
       bgColor: "bg-mission-green/10",
       borderColor: "border-mission-green/20",
       features: ["Kinetic impactor modeling", "Gravity tractor analysis", "Nuclear deflection planning"],
-      stats: "5 defense strategies analyzed"
+      stats: "Multi-strategy analysis"
     },
     {
       title: "Mission Control",
@@ -212,7 +397,7 @@ const HomePage = () => {
       bgColor: "bg-plasma-orange/10",
       borderColor: "border-plasma-orange/20",
       features: ["Scenario planning", "Real-time decision support", "Crisis management"],
-      stats: "15+ mission scenarios"
+      stats: "Gamified scenarios"
     },
     {
       title: "Education Hub",
@@ -223,42 +408,7 @@ const HomePage = () => {
       bgColor: "bg-stellar-cyan/10",
       borderColor: "border-stellar-cyan/20",
       features: ["Interactive lessons", "Scientific research", "Expert insights"],
-      stats: "50+ educational modules"
-    }
-  ];
-
-  const quickActions = [
-    { 
-      title: "Launch Simulation", 
-      description: "Start impact modeling", 
-      icon: Play, 
-      href: "/simulation", 
-      color: "bg-quantum-blue",
-      urgent: false
-    },
-    { 
-      title: "Threat Assessment", 
-      description: "View current NEO catalog", 
-      icon: AlertTriangle, 
-      href: "/education", 
-      color: "bg-plasma-orange",
-      urgent: true
-    },
-    { 
-      title: "Defense Planning", 
-      description: "Explore mitigation options", 
-      icon: Shield, 
-      href: "/defense", 
-      color: "bg-mission-green",
-      urgent: false
-    },
-    { 
-      title: "System Status", 
-      description: "Platform health check", 
-      icon: Activity, 
-      href: "/about", 
-      color: "bg-stellar-cyan",
-      urgent: false
+      stats: "Educational modules"
     }
   ];
 
@@ -393,29 +543,44 @@ const HomePage = () => {
             </p>
           </div>
 
-          
-          {/* Quick Action Cards */}
+          {/* Dynamic Feature Cards - Original Size */}
           <div ref={quickActionsRef} className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-12 px-2">
-            {quickActions.map((action, index) => (
-              <Link key={index} to={action.href}>
-                <Card className="hover-card bg-card/60 border-border/50 backdrop-blur-sm hover:shadow-command transition-all duration-300 group cursor-pointer relative overflow-hidden h-full">
-                  {action.urgent && (
-                    <div className="absolute top-1 right-1 sm:top-2 sm:right-2">
-                      <Badge className="bg-destructive text-white text-xs animate-pulse">
-                        Priority
-                      </Badge>
-                    </div>
-                  )}
-                  <CardContent className="p-3 sm:p-6 text-center">
-                    <div className={`card-icon w-8 h-8 sm:w-12 sm:h-12 ${action.color} rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-4 transition-transform shadow-command`}>
-                      <action.icon className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-                    </div>
-                    <h3 className="font-semibold text-foreground mb-1 sm:mb-2 text-sm sm:text-base">{action.title}</h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground">{action.description}</p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+            {[
+              { type: 'simulation', href: '/simulation', color: 'bg-quantum-blue' },
+              { type: 'threat', href: '/education', color: 'bg-plasma-orange' },
+              { type: 'defense', href: '/defense', color: 'bg-mission-green' },
+              { type: 'system', href: '/about', color: 'bg-stellar-cyan' }
+            ].map((config, index) => {
+              const feature = getCurrentFeature(config.type);
+              return (
+                <Link key={index} to={config.href}>
+                  <Card className="hover-card bg-card/60 border-border/50 backdrop-blur-sm hover:shadow-command transition-all duration-300 group cursor-pointer relative overflow-hidden h-full">
+                    <CardContent className="live-card-content p-3 sm:p-6 text-center">
+                      <div className={`card-icon w-8 h-8 sm:w-12 sm:h-12 ${config.color} rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-4 transition-transform shadow-command`}>
+                        <feature.icon className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+                      </div>
+                      
+                      <h3 className="font-semibold text-foreground mb-1 sm:mb-2 text-sm sm:text-base">{feature.title}</h3>
+                      
+                      {/* Feature Information */}
+                      <div className="mb-2">
+                        <div className="text-xs sm:text-sm font-medium text-quantum-blue">{feature.feature}</div>
+                        <div className="text-xs text-muted-foreground">{feature.capability}</div>
+                      </div>
+
+                      {/* Status Badge */}
+                      <div className="flex justify-center mb-2">
+                        <Badge className="bg-mission-green/20 text-mission-green text-xs border-mission-green/30" variant="outline">
+                          {feature.status}
+                        </Badge>
+                      </div>
+                      
+                      <p className="text-xs sm:text-sm text-muted-foreground">{feature.description}</p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
 
           {/* Primary CTA Buttons */}
@@ -576,31 +741,31 @@ const HomePage = () => {
               </CardContent>
             </Card>
 
-            {/* Mission Statistics */}
+            {/* Platform Features */}
             <Card className="hover-card bg-card/60 border-border/50 backdrop-blur-sm shadow-command">
               <CardHeader className="pb-3 sm:pb-6">
                 <CardTitle className="flex items-center space-x-3">
                   <div className="p-2 rounded-lg bg-quantum-blue/20 flex-shrink-0">
                     <Database className="w-4 h-4 sm:w-5 sm:h-5 text-quantum-blue" />
                   </div>
-                  <span className="text-quantum-blue text-sm sm:text-base">Mission Stats</span>
+                  <span className="text-quantum-blue text-sm sm:text-base">Platform Features</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 sm:space-y-3 pt-0">
                 {[
-                  { label: "Simulations Run", value: "10,247", trend: "+12%" },
-                  { label: "Defense Strategies", value: "5", trend: "Active" },
-                  { label: "Educational Modules", value: "50+", trend: "Complete" },
-                  { label: "Users Trained", value: "2,400", trend: "+8%" }
-                ].map((stat, i) => (
+                  { label: "Simulation Engine", feature: "Physics-based modeling", status: "Active" },
+                  { label: "Defense Analysis", feature: "Strategy evaluation", status: "Ready" },
+                  { label: "Education Hub", feature: "Interactive learning", status: "Available" },
+                  { label: "Mission Control", feature: "Scenario planning", status: "Online" }
+                ].map((item, i) => (
                   <div key={i} className="flex justify-between items-center text-xs sm:text-sm">
-                    <span className="text-muted-foreground">{stat.label}</span>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-mono text-quantum-blue font-semibold">{stat.value}</span>
-                      <Badge variant="outline" className="text-xs text-mission-green border-mission-green/30">
-                        {stat.trend}
-                      </Badge>
+                    <div className="flex-1">
+                      <div className="text-muted-foreground">{item.label}</div>
+                      <div className="text-xs text-quantum-blue">{item.feature}</div>
                     </div>
+                    <Badge variant="outline" className="text-xs text-mission-green border-mission-green/30">
+                      {item.status}
+                    </Badge>
                   </div>
                 ))}
               </CardContent>

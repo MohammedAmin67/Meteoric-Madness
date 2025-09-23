@@ -1,39 +1,30 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { 
   Github, 
   Mail, 
   ExternalLink, 
   Heart,
-  MapPin,
-  Calendar,
   Shield,
-  Target,
   Activity,
   ArrowUpRight,
   Satellite,
   Code,
-  Telescope
+  Telescope,
+  Rocket,
+  Database,
+  Monitor
 } from "lucide-react";
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+// Register GSAP plugins
+gsap.registerPlugin(ScrollTrigger);
 
 const Footer = () => {
-  const [email, setEmail] = useState("");
-  const [isSubscribing, setIsSubscribing] = useState(false);
-
-  const handleSubscribe = async (e) => {
-    e.preventDefault();
-    setIsSubscribing(true);
-    
-    // Newsletter subscription logic would go here
-    setTimeout(() => {
-      console.log("Newsletter subscription:", email);
-      setEmail("");
-      setIsSubscribing(false);
-      // You could show a success message here
-    }, 1500);
-  };
+  const [isLoaded, setIsLoaded] = useState(false);
+  const footerRef = useRef(null);
+  const contentRef = useRef(null);
 
   const currentYear = new Date().getFullYear();
 
@@ -41,141 +32,265 @@ const Footer = () => {
     { 
       name: "NASA DART Mission", 
       href: "https://dart.jhuapl.edu/", 
-      icon: ExternalLink,
-      description: "Double Asteroid Redirection Test"
+      icon: Rocket,
+      description: "Double Asteroid Redirection Test mission data"
     },
     { 
       name: "ESA Hera Mission", 
       href: "https://www.esa.int/hera", 
-      icon: ExternalLink,
-      description: "Post-impact asteroid assessment"
+      icon: Satellite,
+      description: "Post-impact asteroid assessment program"
     },
     { 
       name: "JPL Asteroid Watch", 
       href: "https://eyes.nasa.gov/apps/asteroids/", 
-      icon: ExternalLink,
-      description: "Real-time asteroid tracking"
+      icon: Telescope,
+      description: "Real-time near-Earth object tracking"
+    },
+    { 
+      name: "NASA NEO Program", 
+      href: "https://www.nasa.gov/planetarydefense/", 
+      icon: Shield,
+      description: "Planetary Defense Coordination Office"
     }
   ];
 
-  const achievements = [
-    { text: "Open Source Educational Tool", icon: Code },
-    { text: "Real-time Impact Simulation", icon: Activity },
-    { text: "Scientific Data Integration", icon: Telescope }
+  const technologies = [
+    { name: "React", icon: Code },
+    { name: "GSAP", icon: Activity },
+    { name: "WebGL", icon: Monitor },
+    { name: "APIs", icon: Database }
   ];
 
+  // Initialize animations
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+
+      if (footerRef.current) {
+        ScrollTrigger.create({
+          trigger: footerRef.current,
+          start: "top 90%",
+          onEnter: () => {
+            // Animate main content sections
+            if (contentRef.current) {
+              const sections = contentRef.current.querySelectorAll('.footer-section');
+              gsap.fromTo(sections, {
+                opacity: 0,
+                y: 30
+              }, {
+                opacity: 1,
+                y: 0,
+                duration: 0.6,
+                stagger: 0.1,
+                ease: "power2.out"
+              });
+            }
+
+            // Animate resource links
+            const resourceLinks = footerRef.current.querySelectorAll('.resource-link');
+            gsap.fromTo(resourceLinks, {
+              opacity: 0,
+              x: -20
+            }, {
+              opacity: 1,
+              x: 0,
+              duration: 0.4,
+              stagger: 0.1,
+              ease: "power2.out",
+              delay: 0.3
+            });
+          },
+          once: true
+        });
+      }
+
+      // Add interactive hover effects
+      setTimeout(addInteractiveEffects, 600);
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
+  }, []);
+
+  const addInteractiveEffects = () => {
+    // Resource link hover effects
+    const resourceLinks = document.querySelectorAll('.resource-link');
+    resourceLinks.forEach((link) => {
+      if (link.dataset.hoverInitialized) return;
+      link.dataset.hoverInitialized = 'true';
+      
+      const icon = link.querySelector('.resource-icon');
+      
+      const handleMouseEnter = () => {
+        gsap.to(link, {
+          scale: 1.02,
+          y: -2,
+          duration: 0.2,
+          ease: "power2.out"
+        });
+        if (icon) {
+          gsap.to(icon, {
+            scale: 1.1,
+            rotation: 5,
+            duration: 0.2,
+            ease: "power2.out"
+          });
+        }
+      };
+
+      const handleMouseLeave = () => {
+        gsap.to(link, {
+          scale: 1,
+          y: 0,
+          duration: 0.2,
+          ease: "power2.out"
+        });
+        if (icon) {
+          gsap.to(icon, {
+            scale: 1,
+            rotation: 0,
+            duration: 0.2,
+            ease: "power2.out"
+          });
+        }
+      };
+
+      link.addEventListener('mouseenter', handleMouseEnter);
+      link.addEventListener('mouseleave', handleMouseLeave);
+    });
+
+    // Social button hover effects
+    const socialButtons = document.querySelectorAll('.social-button');
+    socialButtons.forEach((button) => {
+      if (button.dataset.hoverInitialized) return;
+      button.dataset.hoverInitialized = 'true';
+      
+      const handleMouseEnter = () => {
+        gsap.to(button, {
+          scale: 1.1,
+          y: -2,
+          duration: 0.2,
+          ease: "back.out(1.7)"
+        });
+      };
+
+      const handleMouseLeave = () => {
+        gsap.to(button, {
+          scale: 1,
+          y: 0,
+          duration: 0.2,
+          ease: "power2.out"
+        });
+      };
+
+      button.addEventListener('mouseenter', handleMouseEnter);
+      button.addEventListener('mouseleave', handleMouseLeave);
+    });
+  };
+
   return (
-    <footer className="bg-card/60 border-t border-border/50 backdrop-blur-sm relative overflow-hidden">
-      {/* Professional Background Effects */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-10 right-10 w-64 h-64 bg-gradient-to-br from-quantum-blue to-stellar-cyan rounded-full blur-3xl" />
-        <div className="absolute bottom-10 left-10 w-48 h-48 bg-gradient-to-br from-plasma-orange to-mission-green rounded-full blur-2xl" />
+    <footer 
+      ref={footerRef}
+      className={`bg-card/60 border-t border-border/50 backdrop-blur-sm relative overflow-hidden transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+    >
+      {/* Simple Background Effects */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-10 right-10 w-48 h-48 bg-gradient-to-br from-quantum-blue to-stellar-cyan rounded-full blur-3xl" />
+        <div className="absolute bottom-10 left-10 w-32 h-32 bg-gradient-to-br from-plasma-orange to-mission-green rounded-full blur-2xl" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div ref={contentRef} className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-8">
           
-          {/* Brand & Newsletter Section */}
-          <div className="space-y-6">
+          {/* Brand & Project Info Section */}
+          <div className="footer-section space-y-6">
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-12 h-12 bg-gradient-quantum rounded-xl flex items-center justify-center shadow-command">
                 <Satellite className="w-7 h-7 text-white" />
               </div>
               <div>
-                <span className="text-2xl font-bold text-quantum-blue bg-clip-text text-transparent">
-                  Impact Lab
+                <span className="text-2xl font-bold text-quantum-blue">
+                  AstroGuard
                 </span>
-                <div className="text-xs text-muted-foreground font-medium">
-                  by AstroVision
+                <div className="text-sm text-muted-foreground font-medium">
+                  Impact Lab
                 </div>
               </div>
             </div>
             
-            <p className="text-muted-foreground max-w-lg leading-relaxed">
-              Professional asteroid impact simulation platform designed to educate and inform about 
-              cosmic threats. Experience advanced planetary defense scenarios through 
-              immersive scientific simulations and comprehensive data analysis.
+            <p className="text-muted-foreground leading-relaxed">
+              Advanced asteroid impact simulation platform combining scientific accuracy with 
+              interactive education. Experience realistic planetary defense scenarios through 
+              cutting-edge web technologies and real space agency data.
             </p>
 
-            {/* Project Features */}
-            <div className="space-y-2">
-              <h4 className="text-sm font-bold text-quantum-blue uppercase tracking-wider">Project Features</h4>
+            {/* Technologies Used */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-bold text-quantum-blue uppercase tracking-wider">Built With</h4>
               <div className="flex flex-wrap gap-2">
-                {achievements.map((achievement, index) => (
+                {technologies.map((tech, index) => (
                   <Badge 
                     key={index}
                     variant="outline" 
-                    className="border-quantum-blue/30 text-quantum-blue bg-quantum-blue/5 hover:bg-quantum-blue/10 transition-colors text-xs"
+                    className="border-border/50 text-muted-foreground bg-muted/20 hover:bg-muted/30 transition-colors text-xs"
                   >
-                    <achievement.icon className="w-3 h-3 mr-1" />
-                    {achievement.text}
+                    <tech.icon className="w-3 h-3 mr-1" />
+                    {tech.name}
                   </Badge>
                 ))}
               </div>
             </div>
 
-            {/* Enhanced Newsletter Signup */}
-            <div className="space-y-4 p-4 bg-muted/20 rounded-lg border border-border/30">
-              <div className="flex items-center space-x-2">
-                <Mail className="w-5 h-5 text-stellar-cyan" />
-                <h4 className="font-bold text-stellar-cyan">Project Updates</h4>
+            {/* Project Stats */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="text-center p-3 bg-quantum-blue/10 rounded-lg border border-quantum-blue/20">
+                <div className="text-lg font-bold text-quantum-blue">4</div>
+                <div className="text-xs text-muted-foreground">Modules</div>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Stay informed about new features, simulation improvements, and educational content updates
-              </p>
-              <form onSubmit={handleSubscribe} className="flex space-x-2">
-                <Input
-                  type="email"
-                  placeholder="Enter your email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="bg-background/50 border-border/50 focus:border-stellar-cyan transition-colors"
-                  required
-                />
-                <Button 
-                  type="submit" 
-                  disabled={isSubscribing}
-                  className="bg-gradient-quantum hover:shadow-command transition-all duration-300 min-w-[60px]"
-                >
-                  {isSubscribing ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                  ) : (
-                    <ArrowUpRight className="w-4 h-4" />
-                  )}
-                </Button>
-              </form>
+              <div className="text-center p-3 bg-stellar-cyan/10 rounded-lg border border-stellar-cyan/20">
+                <div className="text-lg font-bold text-stellar-cyan">100%</div>
+                <div className="text-xs text-muted-foreground">Open Source</div>
+              </div>
+              <div className="text-center p-3 bg-mission-green/10 rounded-lg border border-mission-green/20">
+                <div className="text-lg font-bold text-mission-green">MIT</div>
+                <div className="text-xs text-muted-foreground">License</div>
+              </div>
             </div>
           </div>
 
-          {/* Reference Sources */}
-          <div className="space-y-6">
-            <h3 className="text-lg font-bold text-quantum-blue flex items-center">
+          {/* Scientific Resources */}
+          <div className="footer-section space-y-6">
+            <h3 className="text-lg font-bold text-stellar-cyan flex items-center">
               <div className="p-1 rounded-lg bg-stellar-cyan/10 mr-3">
                 <ExternalLink className="w-5 h-5 text-stellar-cyan" />
               </div>
-              Reference Sources
+              Scientific Sources
             </h3>
             
             <p className="text-sm text-muted-foreground">
-              Scientific data and mission information sourced from leading space agencies
+              Data and research from leading space agencies and astronomical organizations
             </p>
 
-            <div className="space-y-4">
-              {externalResources.map((resource) => (
+            <div className="space-y-3">
+              {externalResources.map((resource, index) => (
                 <a 
-                  key={resource.name}
+                  key={index}
                   href={resource.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block p-4 bg-muted/10 hover:bg-muted/20 rounded-lg border border-border/30 hover:border-stellar-cyan/30 transition-all duration-300 group"
+                  className="resource-link block p-4 bg-muted/10 hover:bg-muted/20 rounded-lg border border-border/30 hover:border-stellar-cyan/30 transition-all duration-300 group"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-stellar-cyan/10 rounded-lg group-hover:bg-stellar-cyan/20 transition-colors">
-                        <resource.icon className="w-4 h-4 text-stellar-cyan group-hover:scale-110 transition-transform" />
+                      <div className="resource-icon p-2 bg-stellar-cyan/10 rounded-lg group-hover:bg-stellar-cyan/20 transition-colors">
+                        <resource.icon className="w-4 h-4 text-stellar-cyan" />
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <div className="font-medium text-foreground group-hover:text-stellar-cyan transition-colors">
                           {resource.name}
                         </div>
@@ -192,73 +307,48 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Technology & Capabilities Section */}
-        <div className="border-y border-border/30 py-6 mb-6">
-          <div className="flex flex-col lg:flex-row items-center justify-between space-y-4 lg:space-y-0 lg:space-x-8">
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge className="bg-stellar-cyan/10 text-stellar-cyan border-stellar-cyan/30 px-3 py-1">
-                <MapPin className="w-3 h-3 mr-2" />
-                Global Impact Detection
-              </Badge>
-              <Badge className="bg-plasma-orange/10 text-plasma-orange border-plasma-orange/30 px-3 py-1">
-                <Calendar className="w-3 h-3 mr-2" />
-                Real-time Calculations
-              </Badge>
-              <Badge className="bg-mission-green/10 text-mission-green border-mission-green/30 px-3 py-1">
-                <Shield className="w-3 h-3 mr-2" />
-                Defense Modeling
-              </Badge>
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <div className="w-2 h-2 bg-mission-green rounded-full animate-pulse" />
-              <span className="font-medium">Built with modern web technologies</span>
-            </div>
-          </div>
-        </div>
-
         {/* Bottom Section */}
-        <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
-          <div className="flex flex-col lg:flex-row items-center space-y-2 lg:space-y-0 lg:space-x-6">
-            <p className="text-muted-foreground text-sm flex items-center">
-              © {currentYear} Meteor Madness. Built with 
-              <Heart className="w-4 h-4 mx-2 text-red-500 animate-pulse" />
-              by AstroVision.
-            </p>        
+        <div className="footer-section border-t border-border/30 pt-6">
+          <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
+            <div className="flex flex-col lg:flex-row items-center space-y-2 lg:space-y-0 lg:space-x-6">
+              <p className="text-muted-foreground text-sm flex items-center">
+                © {currentYear} Meteoric Madness. Crafted with 
+                <Heart className="w-4 h-4 mx-2 text-red-500 animate-pulse" />
+                for scientific education.
+              </p>        
+            </div>
+
+            {/* Social Links */}
+            <div className="flex items-center space-x-3">
+              <span className="text-xs text-muted-foreground mr-2">Connect:</span>
+              <a 
+                href="https://github.com/MohammedAmin67/Meteoric-Madness" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-button text-muted-foreground hover:text-quantum-blue transition-all duration-300 p-3 hover:bg-quantum-blue/10 rounded-xl border border-border/30 hover:border-quantum-blue/30"
+                aria-label="GitHub Repository"
+              >
+                <Github className="w-5 h-5" />
+              </a>
+              <a 
+                href="mailto:mohammed.amin67@example.com" 
+                className="social-button text-muted-foreground hover:text-plasma-orange transition-all duration-300 p-3 hover:bg-plasma-orange/10 rounded-xl border border-border/30 hover:border-plasma-orange/30"
+                aria-label="Contact Email"
+              >
+                <Mail className="w-5 h-5" />
+              </a>
+            </div>
           </div>
 
-          {/* Social Links - Only GitHub and Email */}
-          <div className="flex space-x-3">
-            <a 
-              href="https://github.com/MohammedAmin67/Meteoric-Madness" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-quantum-blue transition-all duration-300 p-3 hover:bg-quantum-blue/5 rounded-xl group border border-border/30 hover:border-quantum-blue/30"
-              aria-label="GitHub Repository"
-            >
-              <Github className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            </a>
-            <a 
-              href="mailto:mohammed.amin67@example.com" 
-              className="text-muted-foreground hover:text-plasma-orange transition-all duration-300 p-3 hover:bg-plasma-orange/5 rounded-xl group border border-border/30 hover:border-plasma-orange/30"
-              aria-label="Contact Email"
-            >
-              <Mail className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            </a>
-          </div>
-        </div>
-
-        {/* Final Mission Statement */}
-        <div className="mt-6 pt-4 border-t border-border/30 text-center">
-          <div className="flex items-center justify-center space-x-2 mb-2">
-            <Target className="w-4 h-4 text-quantum-blue" />
-            <p className="text-sm font-medium text-quantum-blue">
-              Advancing Planetary Defense Education Through Innovation
+          {/* Mission Statement */}
+          <div className="text-center mt-6 pt-4 border-t border-border/30">
+            <p className="text-sm font-medium text-quantum-blue mb-2">
+              Advancing Planetary Defense Through Interactive Education
             </p>
-            <Target className="w-4 h-4 text-quantum-blue" />
+            <p className="text-xs text-muted-foreground max-w-2xl mx-auto">
+              Empowering the next generation with hands-on asteroid detection and defense experience.
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            An independent educational project for understanding cosmic threats
-          </p>
         </div>
       </div>
     </footer>

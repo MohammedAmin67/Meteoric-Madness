@@ -185,7 +185,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter basename="/Meteoric-Madness/">
+      <BrowserRouter basename="/Meteor-Madness">
         <div className="min-h-screen bg-background text-foreground">
           <Navigation />
           <main className="pt-16">
