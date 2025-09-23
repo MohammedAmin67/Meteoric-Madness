@@ -117,114 +117,75 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
     return settings[qualityLevel] || settings.high;
   }, [qualityLevel]);
 
-  // Load realistic textures with proper loading manager
-  const loadTextures = useCallback(() => {
-    return new Promise((resolve) => {
-      const loader = new THREE.TextureLoader();
-      
-      const textures = {};
-      let loadedCount = 0;
-      const totalTextures = 6;
+  // Realistic textures 
+ const loadTextures = useCallback(() => {
+  const basePath = import.meta.env.BASE_URL;
 
-      // Track loading progress
-      const checkComplete = () => {
-        loadedCount++;
-        if (loadedCount === totalTextures) {
-          // Configure texture settings after all are loaded
-          Object.values(textures).forEach(texture => {
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            texture.anisotropy = 16; // Better quality at distance
-          });
+  return new Promise((resolve) => {
+    const loader = new THREE.TextureLoader();
+    
+    const textures = {};
+    let loadedCount = 0;
+    const totalTextures = 6;
 
-          texturesRef.current = textures;
-          setTexturesLoaded(true);
-          resolve(textures);
-        }
-      };
+    const checkComplete = () => {
+      loadedCount++;
+      if (loadedCount === totalTextures) {
+        Object.values(textures).forEach(texture => {
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.anisotropy = 16;
+        });
+        texturesRef.current = textures;
+        setTexturesLoaded(true);
+        resolve(textures);
+      }
+    };
 
-      // Load Earth textures with error handling
-      loader.load(
-        '/textures/2k_earth_daymap.jpg',
-        (texture) => {
-          textures.earthDay = texture;
-          checkComplete();
-        },
-        undefined,
-        (error) => {
-          console.warn('Earth daymap failed to load:', error);
-          checkComplete();
-        }
-      );
+    // Prepending basePath to each texture path
+    loader.load(
+      `${basePath}textures/2k_earth_daymap.jpg`,
+      (texture) => { textures.earthDay = texture; checkComplete(); },
+      undefined,
+      (error) => { console.warn('Earth daymap failed to load:', error); checkComplete(); }
+    );
 
-      loader.load(
-        '/textures/2k_earth_normal_map.jpg',
-        (texture) => {
-          textures.earthNormal = texture;
-          checkComplete();
-        },
-        undefined,
-        (error) => {
-          console.warn('Earth normal map failed to load:', error);
-          checkComplete();
-        }
-      );
+    loader.load(
+      `${basePath}textures/2k_earth_normal_map.jpg`,
+      (texture) => { textures.earthNormal = texture; checkComplete(); },
+      undefined,
+      (error) => { console.warn('Earth normal map failed to load:', error); checkComplete(); }
+    );
 
-      loader.load(
-        '/textures/2k_earth_specular_map.jpg',
-        (texture) => {
-          textures.earthSpecular = texture;
-          checkComplete();
-        },
-        undefined,
-        (error) => {
-          console.warn('Earth specular map failed to load:', error);
-          checkComplete();
-        }
-      );
+    loader.load(
+      `${basePath}textures/2k_earth_specular_map.jpg`,
+      (texture) => { textures.earthSpecular = texture; checkComplete(); },
+      undefined,
+      (error) => { console.warn('Earth specular map failed to load:', error); checkComplete(); }
+    );
 
-      loader.load(
-        '/textures/2k_earth_clouds.jpg',
-        (texture) => {
-          textures.earthClouds = texture;
-          checkComplete();
-        },
-        undefined,
-        (error) => {
-          console.warn('Earth clouds failed to load:', error);
-          checkComplete();
-        }
-      );
-      
-      // Load Moon texture
-      loader.load(
-        '/textures/2k_moon.jpg',
-        (texture) => {
-          textures.moon = texture;
-          checkComplete();
-        },
-        undefined,
-        (error) => {
-          console.warn('Moon texture failed to load:', error);
-          checkComplete();
-        }
-      );
-      
-      // Load Stars texture
-      loader.load(
-        '/textures/2k_stars_milky_way.jpg',
-        (texture) => {
-          textures.stars = texture;
-          checkComplete();
-        },
-        undefined,
-        (error) => {
-          console.warn('Stars texture failed to load:', error);
-          checkComplete();
-        }
-      );
-    });
-  }, []);
+    loader.load(
+      `${basePath}textures/2k_earth_clouds.jpg`,
+      (texture) => { textures.earthClouds = texture; checkComplete(); },
+      undefined,
+      (error) => { console.warn('Earth clouds failed to load:', error); checkComplete(); }
+    );
+    
+    loader.load(
+      `${basePath}textures/2k_moon.jpg`,
+      (texture) => { textures.moon = texture; checkComplete(); },
+      undefined,
+      (error) => { console.warn('Moon texture failed to load:', error); checkComplete(); }
+    );
+    
+    loader.load(
+      `${basePath}textures/2k_stars_milky_way.jpg`,
+      (texture) => { textures.stars = texture; checkComplete(); },
+      undefined,
+      (error) => { console.warn('Stars texture failed to load:', error); checkComplete(); }
+    );
+  });
+}, []);
 
   // Enhanced scene initialization with proper texture loading
   const initializeScene = useCallback(async () => {
