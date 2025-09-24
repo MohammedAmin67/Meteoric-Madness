@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
@@ -40,12 +40,39 @@ const SimulationPage = () => {
   const [asteroidParams, setAsteroidParams] = useState(null);
   const [isSimulating, setIsSimulating] = useState(false);
 
+    const [showDebugInfo, setShowDebugInfo] = useState(false);
+    const orbitalVisRef = useRef(null); // Ref for the visualization card
+    const impactChartRef = useRef(null); // Ref for the chart card
+
+    const handleFullscreen = (enter = true) => {
+      const elem = orbitalVisRef.current;
+      if (enter && elem && !document.fullscreenElement) {
+        elem.requestFullscreen().catch(err => console.error(err));
+      } else if (!enter && document.fullscreenElement) {
+        document.exitFullscreen();
+      }
+    };
+
   // Called by SimulationPanel when simulation finishes
   const handleSimulationStart = (data) => {
-    setIsSimulating(true);
-    setSimulationData(data);
-    setTimeout(() => setIsSimulating(false), 10000);
-  };
+  setIsSimulating(true);
+  setSimulationData(data);
+
+  setShowDebugInfo(true);
+  handleFullscreen(true); // Enter fullscreen
+
+  // This timeout should ideally be managed by the animation end event
+  setTimeout(() => setIsSimulating(false), 10000);
+};
+
+  const handleAnimationEnd = () => {
+    handleFullscreen(false); // Exit fullscreen
+    setShowDebugInfo(false);
+    // Scroll to the impact chart after a short delay
+    setTimeout(() => {
+        impactChartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 500); // Delay allows for fullscreen exit transition
+};
 
   // Called by SimulationPanel when asteroid params change
   const handleParamsChange = (params) => {
@@ -75,17 +102,21 @@ const SimulationPage = () => {
             <div className="lg:col-span-4 xl:col-span-4">
               <div className="sticky top-20 lg:top-24">
                 <SimulationPanel
-                  onSimulationComplete={handleSimulationStart}
+                  onSimulationStart={handleSimulationStart}
                   onParamsChange={handleParamsChange}
                 />
               </div>
             </div>
             <div className="lg:col-span-8 xl:col-span-8 space-y-6 lg:space-y-8">
-              <OrbitalVisualization
+             <OrbitalVisualization
+                fullscreenRef={orbitalVisRef}// Add the ref here
                 params={asteroidParams}
                 isSimulating={isSimulating}
+                showDebugInfo={showDebugInfo} // Pass the state down
+                setShowDebugInfo={setShowDebugInfo} // Pass the setter down
+                onAnimationEnd={handleAnimationEnd} // Pass the end handler
               />
-              <ImpactDataChart data={simulationData} />
+              <ImpactDataChart ref={impactChartRef} data={simulationData} />
             </div>
           </div>
         </div>

@@ -31,7 +31,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
-const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
+const SimulationPanel = ({ onSimulationStart, onParamsChange }) => {
   const [asteroidParams, setAsteroidParams] = useState({
     size: "100",
     velocity: "20",
@@ -326,7 +326,7 @@ const SimulationPanel = ({ onSimulationComplete, onParamsChange }) => {
       await new Promise(resolve => setTimeout(resolve, 2500));
       const simulationData = await simulateAsteroid(asteroidParams);
       setResults(simulationData);
-      onSimulationComplete?.(simulationData);
+      onSimulationStart?.(simulationData);
       setProgress(100);
     } catch (error) {
       console.error("Simulation failed:", error);

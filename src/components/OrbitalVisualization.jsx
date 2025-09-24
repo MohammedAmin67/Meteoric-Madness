@@ -1,7 +1,8 @@
+import React from 'react';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import * as THREE from 'three';
-// MODIFICATION: Import OrbitControls for free camera navigation
+import gsap from 'gsap';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,25 +16,42 @@ import {
   RotateCw,
   Camera,
   Settings,
-  Volume2,
-  VolumeX,
+  Minimize,
+  Maximize,
   Shield,
   Eye,
   Gauge
 } from "lucide-react";
 
-const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) => {
+const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000, showDebugInfo, setShowDebugInfo, onAnimationEnd }) => {
+
+  const fullscreenContainerRef = useRef(null);
+
   const mountRef = useRef(null);
+
   const sceneRef = useRef(null);
+
   const rendererRef = useRef(null);
+
   const cameraRef = useRef(null);
+
   const asteroidRef = useRef(null);
+
   const trailRef = useRef(null);
+
   const animationRef = useRef(null);
+
   const earthRef = useRef(null);
+
   const explosionParticlesRef = useRef([]);
+
+  const shockwaveRef = useRef(null);
+
   const atmosphereRef = useRef(null);
-  // MODIFICATION: Add a ref to hold the OrbitControls instance
+
+  const moonRef = useRef(null);
+
+  // OrbitControls instance
   const controlsRef = useRef(null);
 
   // Enhanced state management
@@ -41,12 +59,12 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
   const [currentTime, setCurrentTime] = useState(0);
   const [isAutoRotate, setIsAutoRotate] = useState(true);
   const [cameraMode, setCameraMode] = useState('orbital'); // orbital, follow, cinematic
-  const [audioEnabled, setAudioEnabled] = useState(false);
-  const [showDebugInfo, setShowDebugInfo] = useState(false);
   const [qualityLevel, setQualityLevel] = useState('high'); // medium, high, ultra
   const [texturesLoaded, setTexturesLoaded] = useState(false);
-  // MODIFICATION: Add state to track if the user is interacting with the canvas
+
+  // State to track if the user is interacting with the canvas
   const [isUserInteracting, setIsUserInteracting] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Performance monitoring
   const [fps, setFps] = useState(60);
@@ -80,7 +98,7 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
       medium: {
         shadowMapSize: 2048,
         particleCount: 1000,
-        asteroidDetail: 2,
+        asteroidDetail: 5,
         earthDetail: 48,
         trailLength: 60,
         explosionParticles: 50,
@@ -90,7 +108,7 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
       high: {
         shadowMapSize: 4096,
         particleCount: 2000,
-        asteroidDetail: 3,
+        asteroidDetail: 6,
         earthDetail: 64,
         trailLength: 100,
         explosionParticles: 100,
@@ -100,7 +118,7 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
       ultra: {
         shadowMapSize: 8192,
         particleCount: 3000,
-        asteroidDetail: 4,
+        asteroidDetail: 7,
         earthDetail: 96,
         trailLength: 150,
         explosionParticles: 150,
@@ -126,7 +144,7 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
     
     const textures = {};
     let loadedCount = 0;
-    const totalTextures = 6;
+    const totalTextures = 8;
 
     const checkComplete = () => {
       loadedCount++;
@@ -148,6 +166,19 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
       (texture) => { textures.earthDay = texture; checkComplete(); },
       undefined,
       (error) => { console.warn('Earth daymap failed to load:', error); checkComplete(); }
+    );
+
+    loader.load(
+      `${basePath}textures/2k_earth_nightmap.jpg`,
+      (texture) => {
+        textures.earthNight = texture;
+        checkComplete();
+      },
+      undefined,
+      (error) => {
+        console.warn('Earth night map failed to load:', error);
+        checkComplete();
+      }
     );
 
     loader.load(
@@ -183,6 +214,19 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
       (texture) => { textures.stars = texture; checkComplete(); },
       undefined,
       (error) => { console.warn('Stars texture failed to load:', error); checkComplete(); }
+    );
+
+    loader.load(
+      `${basePath}textures/ground_0010_color_2k.jpg`,
+      (texture) => {
+        textures.asteroid = texture;
+        checkComplete();
+      },
+      undefined,
+      (error) => {
+        console.warn('Asteroid texture failed to load:', error);
+        checkComplete();
+      }
     );
   });
 }, []);
@@ -299,11 +343,15 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
     
     const earthMaterial = new THREE.MeshPhongMaterial({ 
       map: textures.earthDay || null,           // Day texture
-      normalMap: textures.earthNormal || null,  // CORRECT: Use normalMap, not bumpMap
-      specularMap: textures.earthSpecular || null, // Ocean reflections
+      normalMap: textures.earthNormal || null,
+      specularMap: textures.earthSpecular || null,
       shininess: 100,
-      specular: 0x111111 // Reduced specular intensity
-      // REMOVED: bumpScale and bumpMap (these were causing black earth)
+      specular: 0x111111,
+
+      // Night Map
+      emissiveMap: textures.earthNight || null, 
+      emissive: new THREE.Color(0xffffff),      
+      emissiveIntensity: 1.0                  
     });
     
     const earth = new THREE.Mesh(earthGeometry, earthMaterial);
@@ -374,12 +422,14 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
       // REMOVED: bumpMap and bumpScale (these were causing black moon)
     });
     const moon = new THREE.Mesh(moonGeometry, moonMaterial);
-    moon.position.set(120, 30, 80);
+    // Sets initial position to be on the orbit ring (radius 90)
+    moon.position.set(90, 0, 0); 
     if (quality.enableShadows) {
       moon.castShadow = true;
       moon.receiveShadow = true;
     }
     scene.add(moon);
+    moonRef.current = moon; 
 
     // Enhanced particle stars for depth (reduced since we have background sphere)
     const particleStarsGeometry = new THREE.BufferGeometry();
@@ -466,33 +516,37 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
     const size = Math.max(1.5, Math.min(20, baseSize / 12));
     
     // Composition-based realistic materials
-    const compositionMaterials = {
-      rock: new THREE.MeshPhongMaterial({ 
-        color: 0x8b5cf6, 
-        shininess: 15,
-        specular: 0x222222
-      }),
-      metal: new THREE.MeshPhongMaterial({ 
-        color: 0x6b7280, 
-        shininess: 120,
-        specular: 0x666666,
-        reflectivity: 0.3
-      }),
-      ice: new THREE.MeshPhongMaterial({ 
-        color: 0x22d3ee, 
-        shininess: 100,
-        transparent: true,
-        opacity: 0.92,
-        specular: 0x88ccff
-      }),
-      mixed: new THREE.MeshPhongMaterial({ 
-        color: 0xf97316, 
-        shininess: 40,
-        specular: 0x443322
-      })
+    const asteroidTexture = texturesRef.current.asteroid;
+
+    // Define base properties for the material
+    const materialProps = {
+      map: asteroidTexture || null, // Apply the detailed rock texture
+      shininess: 10,
+      specular: 0x111111,
     };
 
-    const material = compositionMaterials[params.composition] || compositionMaterials.rock;
+    // Add color tinting based on the composition parameter
+    switch (params.composition) {
+      case 'metal':
+        materialProps.color = new THREE.Color(0x999999); // Grey tint for metal
+        materialProps.shininess = 150; // More reflective
+        materialProps.specular = new THREE.Color(0x777777);
+        break;
+      case 'ice':
+        materialProps.color = new THREE.Color(0xaaddff); // Icy blue tint
+        materialProps.shininess = 100;
+        materialProps.specular = new THREE.Color(0xeeeeff);
+        break;
+      case 'mixed':
+        materialProps.color = new THREE.Color(0xc2a892); // Brownish tint
+        break;
+      case 'rock':
+      default:
+        // No tint for standard rock, use the texture's natural color
+        break;
+    }
+
+const material = new THREE.MeshPhongMaterial(materialProps);
     
     // Create irregular asteroid shape
     const geometry = new THREE.IcosahedronGeometry(size, quality.asteroidDetail);
@@ -504,12 +558,17 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
     for (let i = 0; i < positions.count; i++) {
       vertex.fromBufferAttribute(positions, i);
       
-      // Multi-octave noise for realistic surface
-      const noise1 = Math.sin(vertex.x * 0.1) * Math.cos(vertex.y * 0.1) * 0.25;
-      const noise2 = Math.sin(vertex.x * 0.25) * Math.cos(vertex.z * 0.25) * 0.15;
-      const noise3 = (Math.random() - 0.5) * 0.1;
       
-      const deformation = 0.7 + noise1 + noise2 + noise3;
+      // A more complex noise function for a more irregular shape
+      const p = vertex.clone().normalize();
+      // Large, sweeping bumps for an overall irregular shape
+      const largeBumps = Math.sin(p.x * 3) * Math.sin(p.y * 4) * Math.sin(p.z * 5) * 0.4;
+      // Smaller, crater-like features
+      const craters = Math.pow(Math.sin(p.x * 10) * Math.sin(p.y * 10), 2) * -0.2;
+      // Tiny, random noise for a rough surface
+      const fineNoise = (Math.random() - 0.5) * 0.1;
+
+const deformation = 1.0 + largeBumps + craters + fineNoise;
       vertex.multiplyScalar(deformation);
       
       positions.setXYZ(i, vertex.x, vertex.y, vertex.z);
@@ -526,20 +585,6 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
 
     // Velocity-based atmospheric effects
     const velocity = parseFloat(params.velocity) || 20;
-    
-    // Heating glow for high-velocity impacts
-    if (velocity > 12) {
-      const glowIntensity = Math.min(0.8, (velocity - 12) / 40);
-      const glowGeometry = new THREE.SphereGeometry(size + velocity / 10, 12, 12);
-      const glowMaterial = new THREE.MeshBasicMaterial({
-        color: new THREE.Color().setHSL(0.08 - glowIntensity * 0.08, 0.9, 0.5),
-        transparent: true,
-        opacity: glowIntensity * 0.5,
-        blending: THREE.AdditiveBlending
-      });
-      const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-      asteroid.add(glow);
-    }
 
     // Plasma trail for extreme velocity
     if (velocity > 30) {
@@ -622,7 +667,7 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
     const velocity = parseFloat(params?.velocity) || 20;
     const size = parseFloat(params?.asteroidSize || params?.size) || 100;
     
-    const explosionIntensity = Math.min(4, (velocity * size) / 1200);
+    const explosionIntensity = Math.min(8, (velocity * size) / 800); // Capped intensity
     
     // Multi-stage explosion
     const explosionStages = [
@@ -634,11 +679,12 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
     
     explosionStages.forEach((stage, stageIndex) => {
       setTimeout(() => {
-        const particleCount = Math.min(quality.explosionParticles / 4, 25);
-        
+        const particleCount = quality.explosionParticles * 2; // Create much more debris
+
         for (let i = 0; i < particleCount; i++) {
-          const particleGeometry = new THREE.SphereGeometry(
-            stage.size * explosionIntensity, 6, 6
+          // Use an irregular shape for more realistic rock debris
+          const particleGeometry = new THREE.IcosahedronGeometry(
+            Math.random() * stage.size * explosionIntensity * 0.5, 0 
           );
           const particleMaterial = new THREE.MeshBasicMaterial({
             color: stage.color,
@@ -701,28 +747,57 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
       }, stage.delay);
     });
 
-    // Earth shake effect
-    const originalPosition = earthRef.current.position.clone();
-    let shakeCount = 0;
-    const maxShakes = 20;
+    // --- Cinematic Camera Shake Effect ---
+if (cameraRef.current) {
     const shakeIntensity = Math.min(10, explosionIntensity * 2.5);
-    
-    const shake = () => {
-      if (shakeCount < maxShakes) {
-        const intensity = (maxShakes - shakeCount) / maxShakes * shakeIntensity;
-        
-        earthRef.current.position.x = originalPosition.x + 
-          Math.sin(shakeCount * 0.8) * intensity * 0.2;
-        earthRef.current.position.y = originalPosition.y + 
-          Math.cos(shakeCount * 1.1) * intensity * 0.15;
-        
-        shakeCount++;
-        setTimeout(shake, 20);
-      } else {
-        earthRef.current.position.copy(originalPosition);
-      }
-    };
-    shake();
+    gsap.to(cameraRef.current.position, {
+        // Shake on x, y, and z axes for a more violent feel
+        x: `+=${(Math.random() - 0.5) * shakeIntensity}`,
+        y: `+=${(Math.random() - 0.5) * shakeIntensity}`,
+        z: `+=${(Math.random() - 0.5) * shakeIntensity}`,
+        duration: 0.05, // How fast each jolt is
+        repeat: 20,    // How many jolts
+        yoyo: true,    // Return to the original position after each jolt
+        ease: "power2.inOut"
+    });
+}
+
+    // Shockwave effect
+    const shockwaveGeometry = new THREE.RingGeometry(0.1, 1, 128);
+    const shockwaveMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffa500, // Orange-gold color
+        transparent: true,
+        opacity: 1,
+        side: THREE.DoubleSide
+    });
+    shockwaveRef.current = new THREE.Mesh(shockwaveGeometry, shockwaveMaterial);
+
+    // Position the shockwave at the impact point and orient it correctly
+    if (asteroidRef.current) {
+        shockwaveRef.current.position.copy(asteroidRef.current.position);
+    }
+    shockwaveRef.current.lookAt(0, 0, 0); // Point it away from the Earth's center
+    sceneRef.current.add(shockwaveRef.current);
+
+    // Animate the shockwave's scale and fade it out over time
+    gsap.to(shockwaveRef.current.scale, {
+        x: 100,
+        y: 100,
+        z: 100,
+        duration: 3, // 3-second expansion
+        ease: "power1.out"
+    });
+    gsap.to(shockwaveRef.current.material, {
+        opacity: 0,
+        duration: 3,
+        ease: "power1.out",
+        onComplete: () => {
+            if (shockwaveRef.current && sceneRef.current) {
+                sceneRef.current.remove(shockwaveRef.current);
+                shockwaveRef.current = null;
+            }
+        }
+    });
 
     // Atmospheric flash
     if (atmosphereRef.current) {
@@ -788,12 +863,10 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
       asteroidRef.current.position.copy(currentPos);
 
       // Asteroid rotation with composition-based tumbling
-      const rotationSpeed = 0.015 * (1 + velocity / 35);
-      const tumbleMultiplier = params.composition === 'mixed' ? 1.4 : 1;
-      
-      asteroidRef.current.rotation.x += rotationSpeed * tumbleMultiplier;
-      asteroidRef.current.rotation.y += rotationSpeed * 1.2 * tumbleMultiplier;
-      asteroidRef.current.rotation.z += rotationSpeed * 0.6 * tumbleMultiplier;
+      const rotationSpeed = 0.02 * (1 + velocity / 50);
+      asteroidRef.current.rotation.x += rotationSpeed * 0.7;
+      asteroidRef.current.rotation.y += rotationSpeed * 1.2;
+      asteroidRef.current.rotation.z += rotationSpeed * 0.5;
 
       // Enhanced camera modes
       switch (cameraMode) {
@@ -875,6 +948,7 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
               if (controlsRef.current) {
                 controlsRef.current.enabled = true;
               }
+              onAnimationEnd?.();
             }
           };
           resetCamera();
@@ -883,7 +957,7 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
     };
 
     animate();
-  }, [params, animationTime, calculateTrajectory, showImpactEffect, cameraMode, getQualitySettings, isPlaying]);
+  }, [params, animationTime, calculateTrajectory, showImpactEffect, cameraMode, getQualitySettings, isPlaying, onAnimationEnd]);
 
   // Enhanced render loop with realistic Earth/cloud rotation
   useEffect(() => {
@@ -904,6 +978,15 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
           clouds.rotation.y += 0.001;
         }
       }
+
+       if (moonRef.current) {
+      const time = Date.now() * 0.0001; // Controls the speed of revolution
+      const orbitRadius = 90;
+      moonRef.current.position.x = Math.cos(time) * orbitRadius;
+      moonRef.current.position.z = Math.sin(time) * orbitRadius;
+
+       moonRef.current.rotation.y += 0.002; // Moon's own rotation
+       }
 
       // MODIFICATION: Check for user interaction before auto-rotating
       if (isAutoRotate && !isUserInteracting && cameraRef.current && !isPlaying && cameraMode === 'orbital') {
@@ -933,34 +1016,32 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
   }, [isAutoRotate, isPlaying, cameraMode, isUserInteracting]);
 
   // Enhanced responsive resize handler
-  useEffect(() => {
-    const handleResize = () => {
-      if (!mountRef.current || !rendererRef.current || !cameraRef.current) return;
-      
-      const { width, height } = getResponsiveDimensions();
-      
-      cameraRef.current.aspect = width / height;
-      cameraRef.current.updateProjectionMatrix();
-      rendererRef.current.setSize(width, height, false);
-      
-      // Auto-adjust quality on smaller screens
-      if (width < 600 && qualityLevel === 'ultra') {
-        setQualityLevel('high');
-      }
-    };
+  const handleResize = useCallback(() => {
+  if (!mountRef.current || !rendererRef.current || !cameraRef.current) return;
 
-    const resizeObserver = new ResizeObserver(handleResize);
-    if (mountRef.current) {
-      resizeObserver.observe(mountRef.current);
-    }
+  const { width, height } = getResponsiveDimensions();
 
-    window.addEventListener('resize', handleResize);
-    
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [getResponsiveDimensions, qualityLevel]);
+  cameraRef.current.aspect = width / height;
+  cameraRef.current.updateProjectionMatrix();
+  rendererRef.current.setSize(width, height, false);
+
+  if (width < 600 && qualityLevel === 'ultra') {
+    setQualityLevel('high');
+  }
+}, [getResponsiveDimensions, qualityLevel]); // Added dependencies
+
+useEffect(() => {
+  const resizeObserver = new ResizeObserver(handleResize);
+  if (mountRef.current) {
+    resizeObserver.observe(mountRef.current);
+  }
+  window.addEventListener('resize', handleResize);
+
+  return () => {
+    resizeObserver.disconnect();
+    window.removeEventListener('resize', handleResize);
+  };
+}, [handleResize]);
 
   // Initialize scene only after component mount
   useEffect(() => {
@@ -1056,6 +1137,28 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
     return { level: "Global", color: "text-destructive", icon: "🌍" };
   }, []);
 
+  const handleToggleFullscreen = () => {
+  if (fullscreenContainerRef.current) { // Use the correct ref here
+    if (!document.fullscreenElement) {
+      fullscreenContainerRef.current.requestFullscreen().catch((err) => {
+        alert(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  }
+};
+// Add this useEffect hook
+useEffect(() => {
+  const onFullscreenChange = () => {
+    setIsFullscreen(!!document.fullscreenElement);
+    setTimeout(handleResize, 50); 
+  };
+  document.addEventListener('fullscreenchange', onFullscreenChange);
+  return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+}, [handleResize]);
+
+
   return (
     <Card className="bg-card/60 backdrop-blur-xl border border-quantum-blue/30 shadow-command relative overflow-hidden">
       {/* Background Effects */}
@@ -1100,19 +1203,23 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
 
       <CardContent className="space-y-3 sm:space-y-4 relative z-10 px-3 sm:px-6 pb-4">
         {/* 3D Visualization Container - Fixed Sizing */}
-        <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-purple-900 rounded-lg border border-quantum-blue/30 overflow-hidden shadow-inner">
-          <div 
+        <div ref={fullscreenContainerRef} className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-purple-900 rounded-lg border border-quantum-blue/30 overflow-hidden shadow-inner">
+         <div 
             ref={mountRef} 
-            className="w-full"
+            className="w-full h-full" 
             style={{ 
-              height: window.innerWidth < 640 ? '320px' : 
-                     window.innerWidth < 1024 ? '400px' : '480px'
+              height: isFullscreen 
+                ? '100%' 
+                : (window.innerWidth < 640 ? '320px' : window.innerWidth < 1024 ? '400px' : '480px')
             }}
           />
           
           {/* Enhanced Control Overlay */}
           <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex flex-col space-y-2">
             <div className="flex space-x-1 sm:space-x-2">
+
+              
+
               <Toggle
                 pressed={isAutoRotate}
                 onPressedChange={setIsAutoRotate}
@@ -1121,6 +1228,8 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
               >
                 <RotateCw className="w-3 h-3 sm:w-4 sm:h-4" />
               </Toggle>
+
+              
               
               <Toggle
                 pressed={showDebugInfo}
@@ -1143,17 +1252,14 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
                 <Camera className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
               
-              <Toggle
-                pressed={audioEnabled}
-                onPressedChange={setAudioEnabled}
-                className="bg-background/25 backdrop-blur-sm border-quantum-blue/30 w-8 h-8 sm:w-10 sm:h-10"
-                size="sm"
-              >
-                {audioEnabled ? 
-                  <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" /> : 
-                  <VolumeX className="w-3 h-3 sm:w-4 sm:h-4" />
-                }
-              </Toggle>
+               <Toggle
+                  pressed={isFullscreen}
+                  onPressedChange={handleToggleFullscreen}
+                  className="bg-background/25 backdrop-blur-sm border-quantum-blue/30 w-8 h-8 sm:w-10 sm:h-10"
+                  size="sm"
+                >
+                  {isFullscreen ? <Minimize className="w-3 h-3 sm:w-4 sm:h-4" /> : <Maximize className="w-3 h-3 sm:w-4 sm:h-4" />}
+                </Toggle>
             </div>
           </div>
 
@@ -1295,7 +1401,7 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground">Camera</label>
             <div className="grid grid-cols-3 gap-1">
-              {['orbital', 'follow', 'cinematic'].map((mode) => (
+              {['orbit', 'follow', 'cinematic'].map((mode) => (
                 <Button
                   key={mode}
                   variant={cameraMode === mode ? "default" : "outline"}
@@ -1303,7 +1409,8 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
                   onClick={() => setCameraMode(mode)}
                   className={`text-xs h-8 ${cameraMode === mode ? 'bg-gradient-quantum' : ''}`}
                 >
-                  {mode.toUpperCase()}
+                  <span className="hidden sm:inline">{mode.toUpperCase()}</span>
+                  <span className="sm:hidden">{mode.toUpperCase().slice(0, 6)}</span>
                 </Button>
               ))}
             </div>
@@ -1312,7 +1419,7 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground">Quality</label>
             <div className="grid grid-cols-3 gap-1">
-              {['medium', 'high', 'ultra'].map((quality) => (
+              {['med', 'high', 'ultra'].map((quality) => (
                 <Button
                   key={quality}
                   variant={qualityLevel === quality ? "default" : "outline"}
@@ -1320,7 +1427,8 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000 }) 
                   onClick={() => setQualityLevel(quality)}
                   className={`text-xs h-8 ${qualityLevel === quality ? 'bg-gradient-quantum' : ''}`}
                 >
-                  {quality.toUpperCase()}
+                  <span className="hidden sm:inline">{quality.toUpperCase()}</span>
+                  <span className="sm:hidden">{quality.toUpperCase().slice(0, 5)}</span>
                 </Button>
               ))}
             </div>
