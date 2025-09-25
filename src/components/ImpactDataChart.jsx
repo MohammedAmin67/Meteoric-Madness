@@ -170,8 +170,8 @@ const ImpactDataChart = ({
       d3.select(this)
         .transition()
         .duration(300)
-        .style('stroke-opacity', '1')
-        .style('transform', 'scale(1.05)');
+        .style('stroke-opacity', '1 ')
+        .style('transform', 'scale(1)');
       
       // Professional tooltip positioning
       const barX = (xScale(d.category) || 0) + xScale.bandwidth() / 2;
@@ -211,41 +211,6 @@ const ImpactDataChart = ({
         .duration(300)
         .style('opacity', 1);
 
-      // Enhanced value display
-      tooltip.append('text')
-        .attr('text-anchor', 'middle')
-        .attr('y', isSmallScreen ? -12 : -18)
-        .attr('fill', 'white')
-        .attr('font-size', isSmallScreen ? '14px' : '18px')
-        .attr('font-weight', '700')
-        .text(`${d.value.toFixed(2)}${d.unit}`);
-      
-      // Category label
-      tooltip.append('text')
-        .attr('text-anchor', 'middle')
-        .attr('y', isSmallScreen ? 0 : -2)
-        .attr('fill', d.color)
-        .attr('font-size', isSmallScreen ? '11px' : '13px')
-        .attr('font-weight', '600')
-        .text(d.description);
-      
-      // Additional info for larger screens
-      if (!isSmallScreen) {
-        tooltip.append('text')
-          .attr('text-anchor', 'middle')
-          .attr('y', 15)
-          .attr('fill', '#94a3b8')
-          .attr('font-size', '10px')
-          .text('Impact Assessment');
-      }
-    })
-    .on('mouseout', function() {
-      d3.select(this)
-        .transition()
-        .duration(300)
-        .style('stroke-opacity', '0.5')
-        .style('transform', 'scale(1)');
-      
       g.select('.tooltip').remove();
     });
 

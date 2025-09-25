@@ -1,7 +1,7 @@
 // Mock API service for Meteor Madness
 // This will be replaced with real backend calls later
 
-// Mock asteroid database
+
 export const mockAsteroids = [
   {
     id: "2023-DZ2",
@@ -36,13 +36,84 @@ export const mockAsteroids = [
 ];
 
 // Mock impact locations
+// In src/services/mockApi.js
+
 const mockLocations = [
-  { region: "Pacific Ocean", lat: -15.5, lng: -145.2 },
-  { region: "Atlantic Ocean", lat: 25.3, lng: -35.7 },
-  { region: "Sahara Desert", lat: 23.8, lng: 8.4 },
-  { region: "Amazon Basin", lat: -8.2, lng: -63.1 },
-  { region: "Siberian Tundra", lat: 65.4, lng: 102.8 },
-  { region: "Australian Outback", lat: -25.7, lng: 134.2 }
+  // === OCEANS & SEAS ===
+  { region: "North Pacific Ocean", lat: 40.0, lng: -160.0 },
+  { region: "Mariana Trench, Pacific", lat: 11.3, lng: 142.2 },
+  { region: "North Atlantic Ocean", lat: 50.0, lng: -35.0 },
+  { region: "Sargasso Sea, Atlantic", lat: 28.0, lng: -66.0 },
+  { region: "South Pacific Ocean", lat: -40.0, lng: -130.0 },
+  { region: "South Atlantic Ocean", lat: -25.0, lng: -20.0 },
+  { region: "Indian Ocean", lat: -15.0, lng: 75.0 },
+  { region: "Arctic Ocean", lat: 85.0, lng: 0.0 },
+  { region: "Southern Ocean (Antarctic)", lat: -75.0, lng: 100.0 },
+  { region: "Mediterranean Sea", lat: 38.0, lng: 18.0 },
+  { region: "Caribbean Sea", lat: 14.5, lng: -75.0 },
+  { region: "South China Sea", lat: 16.0, lng: 115.0 },
+  { region: "Gulf of Mexico", lat: 25.0, lng: -90.0 },
+  { region: "Coral Sea, Australia", lat: -15.0, lng: 150.0 },
+  { region: "Arabian Sea", lat: 15.0, lng: 65.0 },
+  { region: "Bay of Bengal", lat: 15.0, lng: 88.0 },
+  { region: "Laccadive Sea", lat: 8.0, lng: 75.0 },
+
+  // === ASIA ===
+  // South India
+  { region: "Hyderabad, India", lat: 17.4, lng: 78.5 },
+  { region: "Bengaluru, India", lat: 12.9, lng: 77.6 },
+  { region: "Chennai, India", lat: 13.1, lng: 80.3 },
+  { region: "Kochi, India", lat: 9.9, lng: 76.3 },
+  { region: "Visakhapatnam, India", lat: 17.7, lng: 83.3 },
+  { region: "Western Ghats, India", lat: 10.0, lng: 77.0 },
+  { region: "Deccan Plateau, India", lat: 17.0, lng: 76.0 },
+  // Rest of Asia
+  { region: "Tokyo, Japan", lat: 35.7, lng: 139.7 },
+  { region: "Shanghai, China", lat: 31.2, lng: 121.5 },
+  { region: "Beijing, China", lat: 39.9, lng: 116.4 },
+  { region: "Mumbai, India", lat: 19.1, lng: 72.9 },
+  { region: "New Delhi, India", lat: 28.6, lng: 77.2 },
+  { region: "Jakarta, Indonesia", lat: -6.2, lng: 106.8 },
+  { region: "Dubai, UAE", lat: 25.3, lng: 55.3 },
+  { region: "Siberian Tundra, Russia", lat: 68.0, lng: 105.0 },
+  { region: "Himalayas, Nepal", lat: 28.0, lng: 86.9 },
+
+  // === NORTH AMERICA ===
+  { region: "New York City, USA", lat: 40.7, lng: -74.0 },
+  { region: "Los Angeles, USA", lat: 34.1, lng: -118.2 },
+  { region: "Mexico City, Mexico", lat: 19.4, lng: -99.1 },
+  { region: "Toronto, Canada", lat: 43.7, lng: -79.4 },
+  { region: "Rocky Mountains, USA", lat: 39.7, lng: -105.5 },
+
+  // === SOUTH AMERICA ===
+  { region: "Sao Paulo, Brazil", lat: -23.6, lng: -46.6 },
+  { region: "Buenos Aires, Argentina", lat: -34.6, lng: -58.4 },
+  { region: "Andes Mountains, Peru", lat: -11.8, lng: -75.0 },
+  { region: "Amazon Rainforest, Brazil", lat: -3.1, lng: -60.0 },
+
+  // === EUROPE ===
+  { region: "London, UK", lat: 51.5, lng: -0.1 },
+  { region: "Paris, France", lat: 48.9, lng: 2.3 },
+  { region: "Moscow, Russia", lat: 55.8, lng: 37.6 },
+  { region: "Rome, Italy", lat: 41.9, lng: 12.5 },
+  { region: "The Alps, Switzerland", lat: 46.8, lng: 8.2 },
+
+  // === AFRICA ===
+  { region: "Lagos, Nigeria", lat: 6.5, lng: 3.4 },
+  { region: "Cairo, Egypt", lat: 30.0, lng: 31.2 },
+  { region: "Johannesburg, South Africa", lat: -26.2, lng: 28.0 },
+  { region: "Sahara Desert, Algeria", lat: 25.0, lng: 3.0 },
+  { region: "Congo Rainforest", lat: 0.5, lng: 22.0 },
+
+  // === AUSTRALIA & OCEANIA ===
+  { region: "Sydney, Australia", lat: -33.9, lng: 151.2 },
+  { region: "Australian Outback", lat: -25.0, lng: 135.0 },
+  { region: "New Zealand Alps", lat: -43.5, lng: 170.5 },
+
+  // === REMOTE & EXTREME LOCATIONS ===
+  { region: "Antarctica", lat: -82.0, lng: 0.0 },
+  { region: "Greenland Ice Sheet", lat: 72.0, lng: -40.0 },
+  { region: "Gobi Desert, Mongolia", lat: 44.0, lng: 103.0 }
 ];
 
 export const getAsteroidData = async (id) => {
@@ -193,3 +264,22 @@ export const getGameScenarios = async () => {
     }
   ];
 };
+
+export const presets = [
+    {
+        name: "Chelyabinsk Event",
+        params: { size: "20", velocity: "19", density: "3.5", composition: "rock", angle: "20" },
+        description: "A 20-meter meteor that exploded over Russia in 2013, injuring over 1,500 people from its shockwave."
+    },
+    {
+        name: "Tunguska Event",
+        params: { size: "60", velocity: "15", density: "0.8", composition: "ice", angle: "45" },
+        description: "A ~60m object that flattened 2,000 sq km of Siberian forest in 1908 without creating a crater."
+    },
+    {
+        name: "Chicxulub Impactor",
+        params: { size: "10000", velocity: "25", density: "2.8", composition: "rock", angle: "60" },
+        description: "The 10km asteroid that led to a mass extinction event and ended the age of dinosaurs 66 million years ago."
+    },
+];
+

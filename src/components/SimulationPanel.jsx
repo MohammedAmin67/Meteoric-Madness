@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import PropTypes from "prop-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
@@ -12,26 +13,27 @@ import { Slider } from "@/components/ui/slider";
 import { 
   Play, 
   RotateCcw, 
-  AlertTriangle, 
-  Shield,
+  AlertTriangle,
+  ShieldAlert,
   Target,
   Activity,
   TrendingUp,
   Zap,
-
   Globe,
   Clock,
   Crosshair,
+  ChevronRight,
+  List,
   Gauge
 } from "lucide-react";
-import { simulateAsteroid } from "@/services/mockApi";
+import { simulateAsteroid, presets } from "@/services/mockApi";
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
-const SimulationPanel = ({ onSimulationStart, onParamsChange }) => {
+const SimulationPanel = forwardRef(({ onSimulationStart, onParamsChange }, ref) => {
   const [asteroidParams, setAsteroidParams] = useState({
     size: "100",
     velocity: "20",
@@ -45,6 +47,7 @@ const SimulationPanel = ({ onSimulationStart, onParamsChange }) => {
   const [progress, setProgress] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+  const [isPresetDialogOpen, setIsPresetDialogOpen] = useState(false);
 
   // Animation refs
   const containerRef = useRef(null);
@@ -403,11 +406,18 @@ const SimulationPanel = ({ onSimulationStart, onParamsChange }) => {
     if (vel < 35) return { category: "Fast", color: "text-plasma-orange", description: "High-speed impact" };
     return { category: "Extreme", color: "text-destructive", description: "Exceptional velocity" };
   };
-
  
+  const handlePresetClick = (presetParams) => {
+    setAsteroidParams(presetParams);
+    // Animate the panel to indicate a change
+    if (parametersPanelRef.current) {
+        gsap.fromTo(parametersPanelRef.current, { scale: 1 }, { scale: 1.01, duration: 0.2, yoyo: true, repeat: 1 });
+    }
+};
 
- 
-
+ useImperativeHandle(ref, () => ({
+    startSimulation: handleSimulate
+  }));
 
   return (
     <div 
@@ -422,7 +432,7 @@ const SimulationPanel = ({ onSimulationStart, onParamsChange }) => {
             <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
               <div className="flex items-center space-x-3">
                 <div className="p-2 rounded-lg bg-gradient-quantum">
-                  <Shield className="w-5 h-5 text-white" />
+                  <ShieldAlert className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <span className="text-lg sm:text-xl text-quantum-blue">Threat Analysis</span>
@@ -438,6 +448,68 @@ const SimulationPanel = ({ onSimulationStart, onParamsChange }) => {
               )}
             </CardTitle>
           </CardHeader>
+
+          <CardContent className="pt-0">
+        <Separator className="my-4" />
+        <div className="space-y-3">
+            <Label className="flex items-center space-x-2">
+                <List className="w-4 h-4 text-quantum-blue" />
+                <span className="font-medium text-sm">Presets</span>
+            </Label>
+            <div className="grid gap-2">
+               <div className="flex w-">
+    <Dialog open={isPresetDialogOpen} onOpenChange={setIsPresetDialogOpen}>
+        <DialogTrigger asChild>
+             <Button
+  variant="outline"
+  className="group w-full h-14 text-[15px] font-semibold rounded-2xl border border-border/60 bg-muted/20 backdrop-blur-md shadow-sm 
+             hover:shadow-lg hover:border-quantum-blue/60 hover:bg-quantum-blue/10 hover:text-quantum-blue 
+             focus:ring-2 focus:ring-quantum-blue/50 focus:outline-none
+             transition-all duration-300 ease-out active:scale-[0.98]"
+  onMouseEnter={(e) => gsap.to(e.currentTarget, { scale: 1.04, y: -2, duration: 0.25, ease: "power2.out" })}
+  onMouseLeave={(e) => gsap.to(e.currentTarget, { scale: 1, y: 0, duration: 0.25, ease: "power2.out" })}
+>
+  <span className="truncate">Select a Preset Scenario</span>
+</Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[650px] bg-card/80 backdrop-blur-xl border-quantum-blue/30 shadow-command">
+            <DialogHeader>
+                <DialogTitle className="text-quantum-blue flex items-center space-x-3">
+                    <div className="p-2 rounded-lg bg-quantum-blue/20">
+                        <List className="w-5 h-5" />
+                    </div>
+                    <span>Preset Scenarios</span>
+                </DialogTitle>
+                <DialogDescription>
+                    Select a well-known historical impact event to load its parameters into the simulator.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid grid-cols-1 gap-3 pt-4">
+                {presets.map((preset) => (
+                    <div
+                        key={preset.name}
+                        className="interactive-button group flex cursor-pointer items-center justify-between rounded-lg p-4 bg-muted/20 border border-border/50 transition-all duration-300 hover:border-quantum-blue/50 hover:bg-quantum-blue/10"
+                        onClick={() => {
+                            handlePresetClick(preset.params);
+                            setIsPresetDialogOpen(false);
+                        }}
+                        onMouseEnter={(e) => gsap.to(e.currentTarget, { scale: 1.03, x: 5, duration: 0.2 })}
+                        onMouseLeave={(e) => gsap.to(e.currentTarget, { scale: 1, x: 0, duration: 0.2 })}
+                    >
+                        <div className="flex flex-col items-start">
+                            <div className="font-semibold text-foreground transition-colors duration-300 group-hover:text-quantum-blue">{preset.name}</div>
+                            <p className="text-xs text-muted-foreground font-normal whitespace-normal">{preset.description}</p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground transition-transform duration-300 group-hover:translate-x-1 group-hover:text-quantum-blue" />
+                    </div>
+                ))}
+            </div>
+        </DialogContent>
+    </Dialog>
+</div>
+            </div>
+        </div>
+      </CardContent>
           
           <CardContent className="space-y-4 sm:space-y-6">
             {/* Size Input with Slider */}
@@ -797,11 +869,13 @@ const SimulationPanel = ({ onSimulationStart, onParamsChange }) => {
       )}
     </div>
   );
-};
+});
 
 SimulationPanel.propTypes = {
   onSimulationComplete: PropTypes.func,
   onParamsChange: PropTypes.func
 };
+
+SimulationPanel.displayName = "SimulationPanel";
 
 export default SimulationPanel;

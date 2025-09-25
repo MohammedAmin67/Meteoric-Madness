@@ -43,6 +43,9 @@ const SimulationPage = () => {
     const [showDebugInfo, setShowDebugInfo] = useState(false);
     const orbitalVisRef = useRef(null); // Ref for the visualization card
     const impactChartRef = useRef(null); // Ref for the chart card
+    const simulationPanelRef = useRef(null); // Ref for the simulation panel
+
+    // Function to handle entering/exiting fullscreen
 
     const handleFullscreen = (enter = true) => {
       const elem = orbitalVisRef.current;
@@ -102,6 +105,7 @@ const SimulationPage = () => {
             <div className="lg:col-span-4 xl:col-span-4">
               <div className="sticky top-20 lg:top-24">
                 <SimulationPanel
+                  ref={simulationPanelRef} 
                   onSimulationStart={handleSimulationStart}
                   onParamsChange={handleParamsChange}
                 />
@@ -115,6 +119,7 @@ const SimulationPage = () => {
                 showDebugInfo={showDebugInfo} // Pass the state down
                 setShowDebugInfo={setShowDebugInfo} // Pass the setter down
                 onAnimationEnd={handleAnimationEnd} // Pass the end handler
+                onRunSimulation={() => simulationPanelRef.current?.startSimulation()}
               />
               <ImpactDataChart ref={impactChartRef} data={simulationData} />
             </div>
