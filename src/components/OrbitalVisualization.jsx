@@ -519,62 +519,55 @@ const OrbitalVisualization3D = ({ params, isSimulating, animationTime = 8000, sh
 
     const quality = getQualitySettings();
     const baseSize = parseFloat(params.asteroidSize || params.size) || 100;
+    
+    // This size is used for the geometry
     const size = Math.max(1.5, Math.min(20, baseSize / 12));
     
     // Composition-based realistic materials
     const asteroidTexture = texturesRef.current.asteroid;
-
-    // Define base properties for the material
     const materialProps = {
-      map: asteroidTexture || null, // Apply the detailed rock texture
+      map: asteroidTexture || null,
       shininess: 10,
       specular: 0x111111,
     };
 
-    // Add color tinting based on the composition parameter
     switch (params.composition) {
       case 'metal':
-        materialProps.color = new THREE.Color(0x999999); // Grey tint for metal
-        materialProps.shininess = 150; // More reflective
+        materialProps.color = new THREE.Color(0x999999);
+        materialProps.shininess = 150;
         materialProps.specular = new THREE.Color(0x777777);
         break;
       case 'ice':
-        materialProps.color = new THREE.Color(0xaaddff); // Icy blue tint
+        materialProps.color = new THREE.Color(0xaaddff);
         materialProps.shininess = 100;
         materialProps.specular = new THREE.Color(0xeeeeff);
         break;
       case 'mixed':
-        materialProps.color = new THREE.Color(0xc2a892); // Brownish tint
+        materialProps.color = new THREE.Color(0xc2a892);
         break;
       case 'rock':
       default:
-        // No tint for standard rock, use the texture's natural color
         break;
     }
 
-const material = new THREE.MeshPhongMaterial(materialProps);
+    const material = new THREE.MeshPhongMaterial(materialProps);
     
-    // Create irregular asteroid shape
-    const geometry = new THREE.IcosahedronGeometry(size, quality.asteroidDetail);
+    // STEP 1: Create a smooth sphere as the starting point (like the Earth).
+    const geometry = new THREE.SphereGeometry(size, quality.earthDetail, quality.earthDetail);
     
-    // Surface deformation for realism
+    // STEP 2: Deform the sphere to create the final irregular, "crooked" shape.
     const positions = geometry.attributes.position;
     const vertex = new THREE.Vector3();
     
     for (let i = 0; i < positions.count; i++) {
       vertex.fromBufferAttribute(positions, i);
       
-      
-      // A more complex noise function for a more irregular shape
       const p = vertex.clone().normalize();
-      // Large, sweeping bumps for an overall irregular shape
       const largeBumps = Math.sin(p.x * 3) * Math.sin(p.y * 4) * Math.sin(p.z * 5) * 0.4;
-      // Smaller, crater-like features
       const craters = Math.pow(Math.sin(p.x * 10) * Math.sin(p.y * 10), 2) * -0.2;
-      // Tiny, random noise for a rough surface
       const fineNoise = (Math.random() - 0.5) * 0.1;
 
-const deformation = 1.0 + largeBumps + craters + fineNoise;
+      const deformation = 1.0 + largeBumps + craters + fineNoise;
       vertex.multiplyScalar(deformation);
       
       positions.setXYZ(i, vertex.x, vertex.y, vertex.z);
@@ -583,6 +576,7 @@ const deformation = 1.0 + largeBumps + craters + fineNoise;
     positions.needsUpdate = true;
     geometry.computeVertexNormals();
 
+    // STEP 3: Combine the final irregular shape and material into the asteroid object.
     const asteroid = new THREE.Mesh(geometry, material);
     if (quality.enableShadows) {
       asteroid.castShadow = true;
@@ -591,8 +585,6 @@ const deformation = 1.0 + largeBumps + craters + fineNoise;
 
     // Velocity-based atmospheric effects
     const velocity = parseFloat(params.velocity) || 20;
-
-    // Plasma trail for extreme velocity
     if (velocity > 30) {
       const trailGeometry = new THREE.ConeGeometry(size / 4, size * 2.5, 6);
       const trailMaterial = new THREE.MeshBasicMaterial({
